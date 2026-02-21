@@ -9,6 +9,8 @@ export const CONSTANTS = {
   CACHE_TTL_LONG: 3600,     // 1 hour
 
   // Auth
+  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || 'access-secret',
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'refresh-secret',
   BCRYPT_SALT_ROUNDS: 12,
   JWT_EXPIRES_IN: '15m',
   REFRESH_EXPIRES_IN: '7d',

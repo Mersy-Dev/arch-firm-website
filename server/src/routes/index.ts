@@ -6,7 +6,7 @@ import contactRoutes from './contact.routes';
 // import testimonialRoutes from './testimonial.routes';
 // import careerRoutes from './career.routes';
 // import uploadRoutes from './upload.routes';
-// import authRoutes from './auth.routes';
+import authRoutes from './auth.routes';
 // import settingsRoutes from './settings.routes';
 
 const router = Router();
@@ -18,7 +18,7 @@ router.use('/contact', contactRoutes);
 // router.use('/testimonials', testimonialRoutes);
 // router.use('/careers', careerRoutes);
 // router.use('/upload', uploadRoutes);
-// router.use('/auth', authRoutes);
+router.use('/auth', authRoutes);
 // router.use('/settings', settingsRoutes);
 
 export default router;

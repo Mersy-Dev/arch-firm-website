@@ -8,18 +8,26 @@ const seed = async () => {
   const existing = await User.findOne({ email: 'admin@archfirm.com' });
   if (existing) {
     console.info('Admin user already exists');
+    await mongoose.disconnect();
     process.exit(0);
   }
 
-  await User.create({
+  const admin = new User({
     name: 'Site Admin',
     email: 'admin@archfirm.com',
-    password: 'ChangeMe123!',  // Change this immediately after first login!
+    password: 'ChangeMe123!',
     role: 'superadmin',
   });
 
+  await admin.save();
+
   console.info('✓ Admin user created: admin@archfirm.com / ChangeMe123!');
+  await mongoose.disconnect();
   process.exit(0);
 };
 
-seed().catch(console.error);
+seed().catch((err) => {
+  console.error('✗ Seed failed:', err);
+  mongoose.disconnect();
+  process.exit(1);
+});
