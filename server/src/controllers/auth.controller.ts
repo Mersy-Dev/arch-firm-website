@@ -5,17 +5,18 @@ import { ApiResponse } from '../utils/ApiResponse';
 import { ApiError } from '../utils/ApiError';
 import User from '../models/User.model';
 import { CONSTANTS } from '../config/constants';
+import bcrypt from 'bcryptjs';
 
 // ─── Token Helpers ────────────────────────────────────────────────────────────
 
 const generateAccessToken = (payload: { _id: string; email: string; role: string }) =>
   jwt.sign(payload, CONSTANTS.JWT_ACCESS_SECRET, {
-    expiresIn: CONSTANTS.JWT_EXPIRES_IN,      // ✅ was JWT_ACCESS_EXPIRES
+    expiresIn: CONSTANTS.JWT_EXPIRES_IN, // ✅ was JWT_ACCESS_EXPIRES
   });
 
 const generateRefreshToken = (payload: { _id: string }) =>
   jwt.sign(payload, CONSTANTS.JWT_REFRESH_SECRET, {
-    expiresIn: CONSTANTS.REFRESH_EXPIRES_IN,  // ✅ was JWT_REFRESH_EXPIRES
+    expiresIn: CONSTANTS.REFRESH_EXPIRES_IN, // ✅ was JWT_REFRESH_EXPIRES
   });
 // ─── Controllers ──────────────────────────────────────────────────────────────
 
@@ -37,12 +38,23 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
-  // Explicitly select password and refreshToken (select: false on schema)
+  // console.log('=== LOGIN DEBUG ===');
+  // console.log('email received:', email);
+  // console.log('password received:', password);
+  // console.log('body:', req.body);
+
   const user = await User.findOne({ email }).select('+password +refreshToken');
+
+  // console.log('user found:', !!user);
+  // console.log('user.password:', user?.password);
+  // console.log('password type:', typeof password);
+  // console.log('user.password type:', typeof user?.password);
 
   if (!user || !user.isActive) throw new ApiError(401, 'Invalid credentials');
 
-  const isMatch = await user.comparePassword(password);
+  const isMatch = await bcrypt.compare(password, user.password);
+  console.log('isMatch:', isMatch);
+
   if (!isMatch) throw new ApiError(401, 'Invalid credentials');
 
   // ✅ fix
@@ -57,7 +69,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   // Persist hashed refresh token
   user.refreshToken = refreshToken;
   user.lastLogin = new Date();
-  await user.save();
+  await User.updateOne({ _id: user._id }, { refreshToken, lastLogin: new Date() });
 
   // Send refresh token as HttpOnly cookie
   res.cookie('refreshToken', refreshToken, {

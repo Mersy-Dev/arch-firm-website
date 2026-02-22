@@ -9,10 +9,19 @@ export const connectDB = async (): Promise<void> => {
 
   try {
     const conn = await mongoose.connect(uri, {
-      dbName: 'TedexConsult',
+      dbName: 'archfirm',
     });
 
     const { host, port, name } = conn.connection;
+    
+    // Add temporarily to connectDB after connecting:
+    const db = mongoose.connection.db;
+    if (db) {
+      const dbName = db.databaseName;
+      const users = await db.collection('users').find({}).toArray();
+      console.log('Connected to DB:', dbName);
+      console.log('Users in DB:', JSON.stringify(users, null, 2));
+    }
 
     console.log('\n┌─────────────────────────────────────────┐');
     console.log('│         🗄️  DATABASE CONNECTED            │');

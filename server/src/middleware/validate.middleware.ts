@@ -1,20 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodSchema, ZodError } from 'zod';
 
-/**
- * Middleware factory — validates req.body against a Zod schema.
- * Controller only runs if validation passes.
- * 
- * Usage: router.post('/contact', validate(contactSchema), contactController)
- */
 export const validate = (schema: ZodSchema) =>
   (req: Request, res: Response, next: NextFunction) => {
     try {
-      req.body = schema.parse(req.body);
+      const result = schema.parse({
+        body: req.body,
+        query: req.query,
+        params: req.params,
+      }) as { body?: unknown; query?: unknown; params?: unknown };
+
+      req.body = result.body;
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const messages = error.issues.map((e) => `${e.path.join('.')}: ${e.message}`);
+        const messages = error.issues.map((e) => `${e.path.join(': ')}: ${e.message}`);
         res.status(400).json({
           success: false,
           statusCode: 400,

@@ -2,7 +2,7 @@ import express from 'express';
 import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import mongoSanitize from 'express-mongo-sanitize';
+import sanitize from 'mongo-sanitize';
 
 import { corsMiddleware } from './middleware/cors.middleware';
 import { morganLogger } from './middleware/logger.middleware';
@@ -29,8 +29,12 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// ── Security sanitizers
-app.use(mongoSanitize());
+// ── MongoDB injection sanitizer
+app.use((req, _res, next) => {
+  if (req.body) req.body = sanitize(req.body);
+  if (req.params) req.params = sanitize(req.params);
+  next();
+});
 
 // ── Global rate limiting
 app.use(globalRateLimit);
