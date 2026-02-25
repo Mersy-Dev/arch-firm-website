@@ -1,0 +1,11 @@
+:root {
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body:    'Cabinet Grotesk', system-ui, sans-serif;
+  --color-brand:  #1A3C5E;
+  --color-gold:   #C9A84C;
+  --color-ink:    #1A1A1A;
+  --color-bg:     #FAFAF8;
+  --nav-height:   72px;
+  --shadow-md:    0 4px 16px rgba(0,0,0,0.1);
+  --transition:   all 0.2s ease;
+}

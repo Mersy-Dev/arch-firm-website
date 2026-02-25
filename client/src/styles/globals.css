@@ -1,0 +1,20 @@
+/* ✅ imports FIRST */
+@import './variables.css';
+@import './animations.css';
+
+/* then tailwind directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  body { font-family: var(--font-body), sans-serif; color: var(--color-ink); background: var(--color-bg); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  img, video { max-width: 100%; height: auto; display: block; }
+}
+
+@layer components {
+  .section-pad { padding-top: clamp(3rem, 8vw, 7rem); padding-bottom: clamp(3rem, 8vw, 7rem); }
+  .container-main { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; }
+}
