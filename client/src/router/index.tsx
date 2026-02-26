@@ -1,73 +1,3 @@
-// import { lazy, Suspense } from 'react';
-// import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-// import PageWrapper   from '@/components/layout/PageWrapper';
-// import AdminLayout   from '@/components/layout/AdminLayout';
-// import ProtectedRoute from './ProtectedRoute';
-// import Spinner       from '@/components/ui/Spinner';
-
-// // All pages are lazy-loaded — only downloaded when first visited
-// const HomePage      = lazy(() => import('@/pages/HomePage'));
-// // const AboutPage     = lazy(() => import('@/pages/AboutPage'));
-// // const ServicesPage  = lazy(() => import('@/pages/ServicesPage'));
-// // const PortfolioPage = lazy(() => import('@/pages/PortfolioPage'));
-// // const ProjectDetail = lazy(() => import('@/pages/ProjectDetailPage'));
-// // const ProcessPage   = lazy(() => import('@/pages/ProcessPage'));
-// // const TeamPage      = lazy(() => import('@/pages/TeamPage'));
-// // const BlogPage      = lazy(() => import('@/pages/BlogPage'));
-// // const BlogPostPage  = lazy(() => import('@/pages/BlogPostPage'));
-// // const ContactPage   = lazy(() => import('@/pages/ContactPage'));
-// // const CareersPage   = lazy(() => import('@/pages/CareersPage'));
-// // const FAQPage       = lazy(() => import('@/pages/FAQPage'));
-// // const NotFoundPage  = lazy(() => import('@/pages/NotFoundPage'));
-// // const AdminLogin    = lazy(() => import('@/pages/admin/AdminLoginPage'));
-// // const AdminDash     = lazy(() => import('@/pages/admin/AdminDashboard'));
-// // const AdminProjects = lazy(() => import('@/pages/admin/AdminProjects'));
-// // const AdminProjForm = lazy(() => import('@/pages/admin/AdminProjectForm'));
-// // const AdminBlog     = lazy(() => import('@/pages/admin/AdminBlog'));
-// // const AdminEnqs     = lazy(() => import('@/pages/admin/AdminEnquiries'));
-// // const AdminTeam     = lazy(() => import('@/pages/admin/AdminTeam'));
-// // const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
-
-// const w = (el: JSX.Element) => <Suspense fallback={<Spinner fullScreen />}>{el}</Suspense>;
-
-// const router = createBrowserRouter([
-//   {
-//     path: '/', element: <PageWrapper />,
-//     errorElement: w(<NotFoundPage />),
-//     children: [
-//       { index: true,              element: w(<HomePage />) },
-//     //   { path: 'about',            element: w(<AboutPage />) },
-//     //   { path: 'services',         element: w(<ServicesPage />) },
-//     //   { path: 'process',          element: w(<ProcessPage />) },
-//     //   { path: 'team',             element: w(<TeamPage />) },
-//     //   { path: 'contact',          element: w(<ContactPage />) },
-//     //   { path: 'careers',          element: w(<CareersPage />) },
-//     //   { path: 'faq',              element: w(<FAQPage />) },
-//     //   { path: 'portfolio',        element: w(<PortfolioPage />) },
-//     //   { path: 'portfolio/:slug',  element: w(<ProjectDetail />) },
-//     //   { path: 'blog',             element: w(<BlogPage />) },
-//     //   { path: 'blog/:slug',       element: w(<BlogPostPage />) },
-//     ],
-//   },
-// //   { path: 'admin/login', element: w(<AdminLogin />) },
-//   {
-//     path: 'admin', element: <ProtectedRoute />,
-//     children: [{ element: <AdminLayout />, children: [
-//       { index: true,                    element: w(<AdminDash />) },
-//       { path: 'projects',               element: w(<AdminProjects />) },
-//       { path: 'projects/new',           element: w(<AdminProjForm />) },
-//       { path: 'projects/:id/edit',      element: w(<AdminProjForm />) },
-//       { path: 'blog',                    element: w(<AdminBlog />) },
-//       { path: 'enquiries',              element: w(<AdminEnqs />) },
-//       { path: 'team',                    element: w(<AdminTeam />) },
-//       { path: 'settings',               element: w(<AdminSettings />) },
-//     ]}],
-//   },
-// ]);
-
-// export default function AppRouter() { return <RouterProvider router={router} />; }
-
-
 import { lazy, Suspense } from 'react';
 import type { ReactElement } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
@@ -94,6 +24,7 @@ const ContactPage   = lazy(() => import('@/pages/ContactPage'));
 // ─── Admin pages ───────────────────────────────────────────────────────────
 const AdminLogin    = lazy(() => import('@/pages/admin/AdminLoginPage'));
 const AdminDash     = lazy(() => import('@/pages/admin/AdminDashboard'));
+const AdminServices = lazy(() => import('@/pages/admin/AdminServices'));   // ← NEW
 // const AdminProjects = lazy(() => import('@/pages/admin/AdminProjects'));
 // const AdminProjForm = lazy(() => import('@/pages/admin/AdminProjectForm'));
 // const AdminBlog     = lazy(() => import('@/pages/admin/AdminBlog'));
@@ -141,14 +72,15 @@ const router = createBrowserRouter([
       {
         element: <AdminLayout />,
         children: [
-          { index: true,                    element: w(<AdminDash />) },
-          // { path: 'projects',               element: w(<AdminProjects />) },
-          // { path: 'projects/new',           element: w(<AdminProjForm />) },
-          // { path: 'projects/:id/edit',      element: w(<AdminProjForm />) },
-          // { path: 'blog',                   element: w(<AdminBlog />) },
-          // { path: 'enquiries',              element: w(<AdminEnqs />) },
-          // { path: 'team',                   element: w(<AdminTeam />) },
-          // { path: 'settings',               element: w(<AdminSettings />) },
+          { index: true,               element: w(<AdminDash />)     },
+          { path: 'services',          element: w(<AdminServices />) }, // ← NEW
+          // { path: 'projects',          element: w(<AdminProjects />) },
+          // { path: 'projects/new',      element: w(<AdminProjForm />) },
+          // { path: 'projects/:id/edit', element: w(<AdminProjForm />) },
+          // { path: 'blog',              element: w(<AdminBlog />)     },
+          // { path: 'enquiries',         element: w(<AdminEnqs />)     },
+          // { path: 'team',              element: w(<AdminTeam />)     },
+          // { path: 'settings',          element: w(<AdminSettings />) },
         ],
       },
     ],

@@ -2,101 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Helmet } from "react-helmet-async";
+import { useGetAllServicesQuery } from "@/services/servicesApi";
+import type { Service } from "@/services/servicesApi";
 
-// ─── Data ──────────────────────────────────────────────────────────────────
-const SERVICES = [
-  {
-    id: "architectural-design",
-    number: "01",
-    title: "Architectural Design",
-    tagline: "From concept to construction",
-    shortDesc: "Full-cycle architectural services that translate your vision into buildings that stand the test of time.",
-    description: "We deliver end-to-end architectural services — from initial site analysis and schematic sketches through to detailed construction documentation and on-site oversight. Every decision is grounded in how the building will be experienced: light, proportion, materiality, and the relationship between inside and out.",
-    features: [
-      "Site Analysis & Feasibility",
-      "Concept & Schematic Design",
-      "Design Development",
-      "Construction Documentation",
-      "Permit Coordination",
-      "Construction Administration",
-    ],
-    deliverables: ["Concept Drawings", "Planning Submissions", "Technical Packages", "As-built Drawings"],
-    image: "https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=900&q=80&fit=crop",
-  },
-  {
-    id: "interior-architecture",
-    number: "02",
-    title: "Interior Architecture",
-    tagline: "Spaces that breathe",
-    shortDesc: "Interior environments crafted with the same rigour as our buildings — every detail resolved with purpose.",
-    description: "Our interiors are never decorative afterthoughts. We approach the interior as a continuation of the architecture — space planning, material palette, bespoke joinery, and lighting strategy developed as a unified whole. The result is rooms that feel precisely right without ever feeling over-designed.",
-    features: [
-      "Space Planning & Layout",
-      "Material & Finish Curation",
-      "Bespoke Furniture Design",
-      "Lighting Strategy & Design",
-      "Art & Object Placement",
-      "FF&E Procurement",
-    ],
-    deliverables: ["Interior Concept Boards", "Material Schedules", "Furniture Drawings", "Lighting Plans"],
-    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80&fit=crop",
-  },
-  {
-    id: "urban-master-planning",
-    number: "03",
-    title: "Urban & Master Planning",
-    tagline: "Shaping communities",
-    shortDesc: "Large-scale planning that balances density, movement, green space, and identity.",
-    description: "We design districts and neighbourhoods with the long view in mind — understanding how people move, gather, and grow over decades. Our master plans balance commercial viability with civic generosity, creating frameworks that developers, councils, and communities can build on together.",
-    features: [
-      "Urban Design Strategy",
-      "Masterplan Frameworks",
-      "Feasibility Studies",
-      "Mixed-Use Programming",
-      "Public Realm Design",
-      "Transport & Movement Planning",
-    ],
-    deliverables: ["Masterplan Documents", "Design Codes", "Phasing Strategies", "Planning Reports"],
-    image: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&q=80&fit=crop",
-  },
-  {
-    id: "sustainability-consulting",
-    number: "04",
-    title: "Sustainability Consulting",
-    tagline: "Responsible by design",
-    shortDesc: "Integrating passive design and low-carbon materials from day one — without sacrificing beauty.",
-    description: "Sustainability is not a layer we add at the end — it is baked into the design process from the first sketch. We model energy performance, specify low-embodied-carbon materials, and design for disassembly. Our buildings achieve ambitious targets while remaining beautiful, because we believe the two are inseparable.",
-    features: [
-      "Passive Design Strategies",
-      "Energy & Carbon Modelling",
-      "LEED / BREEAM Advisory",
-      "Whole-Life Carbon Assessment",
-      "Material Specification",
-      "Post-Occupancy Evaluation",
-    ],
-    deliverables: ["Energy Models", "Sustainability Statements", "Material Schedules", "Certification Support"],
-    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&q=80&fit=crop",
-  },
-  {
-    id: "heritage-adaptive-reuse",
-    number: "05",
-    title: "Heritage & Adaptive Reuse",
-    tagline: "Old bones, new life",
-    shortDesc: "Sensitive interventions that honour history while unlocking new potential in existing buildings.",
-    description: "The most interesting architectural projects are often not blank-slate new builds. We bring deep expertise in working with listed buildings, conservation areas, and historically significant structures — navigating planning constraints and heritage requirements while delivering interventions that feel contemporary and necessary.",
-    features: [
-      "Conservation Assessment",
-      "Adaptive Reuse Strategy",
-      "Heritage Impact Analysis",
-      "Listed Building Consent",
-      "Structural Integration",
-      "Planning & Conservation Liaison",
-    ],
-    deliverables: ["Heritage Statements", "Conservation Plans", "Planning Applications", "Reuse Strategies"],
-    image: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=900&q=80&fit=crop",
-  },
-];
-
+// ─── Stats (still static — these are studio-level figures) ─────────────────
 const STATS = [
   { value: "180+", label: "Projects Delivered" },
   { value: "24",   label: "Years of Practice"  },
@@ -230,8 +139,33 @@ function PageHero() {
   );
 }
 
-// ─── Service tab nav ───────────────────────────────────────────────────────
-function ServiceTabs({ active, onChange }: { active: string; onChange: (id: string) => void }) {
+// ─── Skeleton tabs ──────────────────────────────────────────────────────────
+function SkeletonTabs() {
+  return (
+    <div className="flex items-stretch gap-0 animate-pulse">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            height: 52,
+            width: 120,
+            background: "rgba(26,26,26,0.05)",
+            margin: "0 2px",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Service tab nav ────────────────────────────────────────────────────────
+function ServiceTabs({
+  services, active, onChange,
+}: {
+  services: Service[];
+  active: string;
+  onChange: (id: string) => void;
+}) {
   return (
     <div
       className="sticky z-30 overflow-x-auto"
@@ -244,12 +178,12 @@ function ServiceTabs({ active, onChange }: { active: string; onChange: (id: stri
     >
       <div className="container-main">
         <div className="flex items-stretch gap-0">
-          {SERVICES.map(({ id, number, title }) => {
-            const isActive = active === id;
+          {services.map(({ _id, number, title }) => {
+            const isActive = active === _id;
             return (
               <button
-                key={id}
-                onClick={() => onChange(id)}
+                key={_id}
+                onClick={() => onChange(_id)}
                 className="group flex items-center gap-2.5 py-4 px-4 shrink-0 focus:outline-none"
                 style={{
                   fontFamily: "var(--font-body)", fontSize: "0.68rem",
@@ -275,19 +209,36 @@ function ServiceTabs({ active, onChange }: { active: string; onChange: (id: stri
   );
 }
 
-// ─── Service detail panel — dark ink background ────────────────────────────
-// Sits between cream ServiceTabs and cream ProcessTeaser.
-// Dark background creates clear visual separation on both sides.
-function ServiceDetail({ service }: { service: (typeof SERVICES)[0] }) {
+// ─── Skeleton detail panel ──────────────────────────────────────────────────
+function SkeletonDetail() {
   return (
     <div style={{ background: "var(--color-ink)" }}>
-      {/* Subtle SVG lines — consistent with other dark sections */}
-      <svg className="absolute w-full pointer-events-none" style={{ height: 0, overflow: "hidden" }} aria-hidden="true" />
+      <div className="container-main py-16 md:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 animate-pulse">
+          <div className="lg:col-span-5">
+            <div style={{ aspectRatio: "4/5", background: "rgba(255,255,255,0.06)" }} />
+          </div>
+          <div className="lg:col-span-7 flex flex-col justify-center gap-4">
+            <div style={{ width: "40%", height: 10, background: "rgba(255,255,255,0.07)" }} />
+            <div style={{ width: "70%", height: 48, background: "rgba(255,255,255,0.08)" }} />
+            <div style={{ width: "90%", height: 12, background: "rgba(255,255,255,0.05)" }} />
+            <div style={{ width: "80%", height: 12, background: "rgba(255,255,255,0.05)" }} />
+            <div style={{ width: "60%", height: 12, background: "rgba(255,255,255,0.05)" }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
+// ─── Service detail panel ───────────────────────────────────────────────────
+function ServiceDetail({ service }: { service: Service }) {
+  return (
+    <div style={{ background: "var(--color-ink)" }}>
       <div className="container-main py-16 md:py-20">
         <AnimatePresence mode="wait">
           <motion.div
-            key={service.id}
+            key={service._id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -390,7 +341,7 @@ function ServiceDetail({ service }: { service: (typeof SERVICES)[0] }) {
                   </div>
                 </div>
 
-                {/* CTA — gold primary on dark, consistent with site pattern */}
+                {/* CTA */}
                 <div className="flex flex-wrap items-center gap-4">
                   <Link
                     to="/contact"
@@ -432,7 +383,39 @@ function ServiceDetail({ service }: { service: (typeof SERVICES)[0] }) {
   );
 }
 
-// ─── Process teaser strip — cream bg ──────────────────────────────────────
+// ─── Error state ────────────────────────────────────────────────────────────
+function ServiceError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div style={{ background: "var(--color-ink)" }}>
+      <div className="container-main py-20 text-center">
+        <p style={{ fontFamily: "var(--font-body)", fontSize: "0.85rem",
+          color: "rgba(255,255,255,0.35)", marginBottom: "1.25rem" }}>
+          Could not load services.
+        </p>
+        <button
+          onClick={onRetry}
+          style={{ fontFamily: "var(--font-body)", fontSize: "0.68rem",
+            letterSpacing: "0.18em", textTransform: "uppercase",
+            background: "transparent", border: "1px solid rgba(255,255,255,0.2)",
+            color: "rgba(255,255,255,0.55)", padding: "0.7rem 1.5rem",
+            cursor: "pointer", transition: "all 0.2s" }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--color-gold)";
+            (e.currentTarget as HTMLElement).style.color = "var(--color-gold)";
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.2)";
+            (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)";
+          }}
+        >
+          Try Again
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Process teaser strip ───────────────────────────────────────────────────
 function ProcessTeaser() {
   const { ref, vis } = useReveal(0.2);
   const STEPS = [
@@ -527,10 +510,22 @@ function ProcessTeaser() {
   );
 }
 
-// ─── Main page ─────────────────────────────────────────────────────────────
+// ─── Main page ──────────────────────────────────────────────────────────────
 export default function ServicesPage() {
-  const [activeId, setActiveId] = useState(SERVICES[0].id);
-  const activeService = SERVICES.find(s => s.id === activeId) ?? SERVICES[0];
+  const { data, isLoading, isError, refetch } = useGetAllServicesQuery();
+
+  const services = data?.data ?? [];
+
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  // Once services load, default to the first one
+  useEffect(() => {
+    if (services.length > 0 && !activeId) {
+      setActiveId(services[0]._id);
+    }
+  }, [services, activeId]);
+
+  const activeService = services.find(s => s._id === activeId) ?? services[0] ?? null;
 
   return (
     <>
@@ -540,11 +535,40 @@ export default function ServicesPage() {
           content="End-to-end architectural services including design, interiors, master planning, sustainability consulting, and heritage work." />
       </Helmet>
 
-      <PageHero />        {/* navy            */}
-      <ServiceTabs active={activeId} onChange={setActiveId} /> {/* cream, sticky  */}
-      <ServiceDetail service={activeService} />                {/* dark ink       */}
-      <ProcessTeaser />                                        {/* cream          */}
-                                                               {/* navy CTA below */}
+      <PageHero />
+
+      {/* Tab nav — show skeleton while loading */}
+      {isLoading ? (
+        <div
+          className="sticky z-30 overflow-x-auto"
+          style={{
+            top: "var(--nav-height)",
+            background: "var(--color-bg)",
+            borderBottom: "1px solid rgba(26,26,26,0.08)",
+          }}
+        >
+          <div className="container-main py-2">
+            <SkeletonTabs />
+          </div>
+        </div>
+      ) : !isError && services.length > 0 && activeId ? (
+        <ServiceTabs
+          services={services}
+          active={activeId}
+          onChange={setActiveId}
+        />
+      ) : null}
+
+      {/* Detail panel */}
+      {isLoading ? (
+        <SkeletonDetail />
+      ) : isError ? (
+        <ServiceError onRetry={refetch} />
+      ) : activeService ? (
+        <ServiceDetail service={activeService} />
+      ) : null}
+
+      <ProcessTeaser />
     </>
   );
 }
