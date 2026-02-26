@@ -9,6 +9,7 @@ import { morganLogger } from './middleware/logger.middleware';
 import { globalRateLimit } from './middleware/rateLimit.middleware';
 import { errorHandler, notFound } from './middleware/error.middleware';
 import apiRouter from './routes/index';
+import serviceRoutes from './routes/service.routes';
 
 const app = express();
 
@@ -51,6 +52,8 @@ app.get('/api/v1/health', (_req, res) => {
 
 // ── All API routes
 app.use('/api/v1', apiRouter);
+app.use("/api/v1/services", serviceRoutes);
+
 
 // ── 404 handler (must be after all routes)
 app.use(notFound);

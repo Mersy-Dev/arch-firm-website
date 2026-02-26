@@ -7,11 +7,14 @@ import contactRoutes from './contact.routes';
 // import careerRoutes from './career.routes';
 // import uploadRoutes from './upload.routes';
 import authRoutes from './auth.routes';
+import serviceRoutes from './service.routes';
 // import settingsRoutes from './settings.routes';
 
 const router = Router();
 
 // router.use('/projects', projectRoutes);
+router.use("/services", serviceRoutes);
+
 // router.use('/blog', blogRoutes);
 router.use('/contact', contactRoutes);
 // router.use('/team', teamRoutes);
@@ -20,5 +23,6 @@ router.use('/contact', contactRoutes);
 // router.use('/upload', uploadRoutes);
 router.use('/auth', authRoutes);
 // router.use('/settings', settingsRoutes);
+
 
 export default router;
