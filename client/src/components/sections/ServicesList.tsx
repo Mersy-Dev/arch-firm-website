@@ -225,6 +225,7 @@ function ServiceRow({ service, index }: { service: typeof SERVICES[0]; index: nu
   );
 }
 
+
 // ─── Main ServicesList ─────────────────────────────────────────────────────
 export default function ServicesList() {
   const headerRef = useReveal(0.2);

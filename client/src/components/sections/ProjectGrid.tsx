@@ -227,7 +227,7 @@ export default function ProjectGrid({ projects, isLoading = false, showFilters =
               and public commissions across four continents.
             </p>
             <a
-              href="/projects"
+              href="/portfolio"
               className="inline-flex items-center gap-1.5 text-[var(--color-brand)] text-[0.65rem] tracking-[0.2em] uppercase border-b border-[var(--color-brand)]/35 pb-px hover:border-[var(--color-brand)] transition-all duration-200 no-underline"
               style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}
             >
