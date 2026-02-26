@@ -10,25 +10,27 @@ import {
   reorderServices,
   deleteService,
 } from "../controllers/service.controller";
-import { protect, restrictTo } from "../middleware/auth.middleware";
-import { validate } from "../middleware/validate.middleware";
+import { protect, restrictTo }  from "../middleware/auth.middleware";
+import { validate }             from "../middleware/validate.middleware";
+import { upload }               from "../middleware/upload.middleware"; // ← reuse your existing multer/cloudinary middleware
 import { createServiceSchema, updateServiceSchema } from "../validators/service.schema";
 
 const router = Router();
 
-// ── Public routes ─────────────────────────────────────────────────────────
-router.get("/", getAllServices);
+// ── Public ───────────────────────────────────────────────────────────────────
+router.get("/",           getAllServices);
 router.get("/slug/:slug", getServiceBySlug);
 
-// ── Admin routes (protected) ──────────────────────────────────────────────
+// ── Admin (protected) ────────────────────────────────────────────────────────
 router.use(protect, restrictTo("admin", "superadmin"));
 
 router.get("/admin/all", getAdminServices);
 router.get("/admin/:id", getServiceById);
-router.post("/", validate(createServiceSchema), createService);
-router.put("/:id", validate(updateServiceSchema), updateService);
-router.patch("/:id/toggle", toggleServiceStatus);
-router.patch("/reorder", reorderServices);
-router.delete("/:id", deleteService);
+
+router.post(  "/",               upload.single("image"), validate(createServiceSchema), createService);
+router.put(   "/:id",            upload.single("image"), validate(updateServiceSchema), updateService);
+router.patch( "/:id/toggle",     toggleServiceStatus);
+router.patch( "/reorder",        reorderServices);
+router.delete("/:id",            deleteService);
 
 export default router;
