@@ -10,7 +10,7 @@ export default function HomePage() {
   const { data: featured, isLoading } = useGetProjectsQuery({ 
     featured: 'true', 
     published: 'true', 
-    limit: 6,
+    limit: 8, 
   });
 
   return (
