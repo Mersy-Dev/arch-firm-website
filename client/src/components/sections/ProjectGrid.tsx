@@ -1,30 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import type { Project } from '@/types/project.types';
 
-// ─── Types ─────────────────────────────────────────────────────────────────
-interface Project {
-  id: string | number;
-  title: string;
-  category?: string;
-  year?: string | number;
-  location?: string;
-  coverImage?: string;
-  slug?: string;
-}
-
+// ─── Props ─────────────────────────────────────────────────────────────────
 interface ProjectGridProps {
-  projects: Project[];
-  isLoading?: boolean;
+  projects:    Project[];
+  isLoading?:  boolean;
   showFilters?: boolean;
 }
-
-// ─── Fallback demo data (renders if API returns nothing) ───────────────────
-const DEMO: Project[] = [
-  { id: 1, title: 'Silhouette Residence',   category: 'Residential', year: 2024, location: 'Hudson Valley, NY', slug: 'silhouette-residence',   coverImage: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&q=80&fit=crop' },
-  { id: 2, title: 'The Meridian Tower',      category: 'Commercial',  year: 2023, location: 'Manhattan, NY',     slug: 'meridian-tower',          coverImage: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&q=80&fit=crop' },
-  { id: 3, title: 'Kaia Cultural Centre',    category: 'Cultural',    year: 2023, location: 'London, UK',         slug: 'kaia-cultural-centre',    coverImage: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=900&q=80&fit=crop' },
-  { id: 4, title: 'Dunes Private Villa',     category: 'Residential', year: 2022, location: 'Dubai, UAE',         slug: 'dunes-villa',             coverImage: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=900&q=80&fit=crop' },
-  { id: 5, title: 'Canopy Pavilion',         category: 'Public',      year: 2022, location: 'Barcelona, ES',      slug: 'canopy-pavilion',         coverImage: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80&fit=crop' },
-];
 
 // ─── Shimmer skeleton card ─────────────────────────────────────────────────
 function SkeletonCard({ wide = false }: { wide?: boolean }) {
@@ -49,8 +31,8 @@ function ProjectCard({
   layout,
 }: {
   project: Project;
-  index: number;
-  layout: 'wide' | 'tall' | 'normal';
+  index:   number;
+  layout:  'wide' | 'tall' | 'normal';
 }) {
   const ref = useRef<HTMLAnchorElement>(null);
 
@@ -65,24 +47,23 @@ function ProjectCard({
     return () => obs.disconnect();
   }, []);
 
-  // Grid span class
   const spanClass =
-    layout === 'wide'   ? 'col-span-12 md:col-span-8' :
-    layout === 'tall'   ? 'col-span-12 sm:col-span-6 md:col-span-4' :
-                          'col-span-12 sm:col-span-6 md:col-span-4';
+    layout === 'wide' ? 'col-span-12 md:col-span-8' :
+    layout === 'tall' ? 'col-span-12 sm:col-span-6 md:col-span-4' :
+                        'col-span-12 sm:col-span-6 md:col-span-4';
 
-  // Image aspect ratio
   const aspectStyle =
     layout === 'wide' ? { aspectRatio: '16/9' } :
     layout === 'tall' ? { aspectRatio: '3/4'  } :
                         { aspectRatio: '4/3'  };
 
+  const year  = new Date(project.completedAt).getFullYear();
   const delay = `${index * 0.1}s`;
 
   return (
     <a
       ref={ref}
-      href={`/projects/${project.slug ?? project.id}`}
+      href={`/portfolio/${project.slug ?? project._id}`}
       data-animate
       className={`${spanClass} group block no-underline text-[var(--color-ink)]`}
       style={{ transitionDelay: delay }}
@@ -90,7 +71,7 @@ function ProjectCard({
       {/* Image wrapper */}
       <div className="relative overflow-hidden bg-[var(--color-brand)]/10" style={aspectStyle}>
         <img
-          src={project.coverImage}
+          src={project.coverImage.url}
           alt={project.title}
           className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-105"
           loading="lazy"
@@ -120,13 +101,13 @@ function ProjectCard({
             className="text-[var(--color-gold)] text-[0.6rem] tracking-[0.22em] uppercase"
             style={{ fontFamily: 'var(--font-body)', fontWeight: 500 }}
           >
-            {project.category ?? 'Architecture'}
+            {project.type}
           </span>
           <span
             className="text-[var(--color-ink)]/40 text-[0.6rem] tracking-[0.12em]"
             style={{ fontFamily: 'var(--font-body)' }}
           >
-            {project.year}
+            {year}
           </span>
         </div>
 
@@ -159,11 +140,9 @@ function ProjectCard({
 
 // ─── Main ProjectGrid ──────────────────────────────────────────────────────
 export default function ProjectGrid({ projects, isLoading = false, showFilters = false }: ProjectGridProps) {
-  const display = projects.length > 0 ? projects : DEMO;
   const [activeFilter, setActiveFilter] = useState('All');
   const headerRef = useRef<HTMLDivElement>(null);
 
-  // Animate header on scroll
   useEffect(() => {
     const el = headerRef.current;
     if (!el) return;
@@ -175,10 +154,9 @@ export default function ProjectGrid({ projects, isLoading = false, showFilters =
     return () => obs.disconnect();
   }, []);
 
-  const categories = ['All', ...Array.from(new Set(display.map((p) => p.category ?? 'Architecture')))];
-  const filtered = activeFilter === 'All' ? display : display.filter((p) => (p.category ?? 'Architecture') === activeFilter);
+  const categories = ['All', ...Array.from(new Set(projects.map(p => p.type)))];
+  const filtered   = activeFilter === 'All' ? projects : projects.filter(p => p.type === activeFilter);
 
-  // Card layout assignment: first card is wide, 4th is tall, rest normal
   const getLayout = (i: number): 'wide' | 'tall' | 'normal' =>
     i === 0 ? 'wide' : i === 3 ? 'tall' : 'normal';
 
@@ -192,7 +170,6 @@ export default function ProjectGrid({ projects, isLoading = false, showFilters =
           data-animate
           className="flex flex-col md:flex-row md:items-end md:justify-between gap-8 mb-14"
         >
-          {/* Left */}
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-px bg-[var(--color-gold)] shrink-0" />
@@ -206,18 +183,13 @@ export default function ProjectGrid({ projects, isLoading = false, showFilters =
             <h2
               id="pg-heading"
               className="text-[var(--color-ink)] leading-[1.05] m-0"
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontWeight: 300,
-                fontSize: 'clamp(2.4rem, 5vw, 4.5rem)',
-              }}
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 300, fontSize: 'clamp(2.4rem, 5vw, 4.5rem)' }}
             >
               Built with{' '}
               <em className="text-[var(--color-ink)]/45" style={{ fontStyle: 'italic' }}>intention</em>
             </h2>
           </div>
 
-          {/* Right */}
           <div className="flex flex-col md:items-end gap-4 max-w-xs">
             <p
               className="text-[var(--color-ink)]/55 leading-relaxed m-0 md:text-right"
@@ -241,8 +213,8 @@ export default function ProjectGrid({ projects, isLoading = false, showFilters =
 
         {/* ── Optional filter bar ── */}
         {showFilters && (
-          <div className="flex flex-wrap gap-2 mb-10" role="group" aria-label="Filter by category">
-            {categories.map((cat) => (
+          <div className="flex flex-wrap gap-2 mb-10" role="group" aria-label="Filter by type">
+            {categories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setActiveFilter(cat)}
@@ -253,7 +225,7 @@ export default function ProjectGrid({ projects, isLoading = false, showFilters =
                     : 'bg-transparent border-[var(--color-ink)]/15 text-[var(--color-ink)]/55 hover:border-[var(--color-brand)]/40 hover:text-[var(--color-ink)]'
                   }
                 `}
-                style={{ fontFamily: 'var(--font-body)' }}
+                style={{ fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}
               >
                 {cat}
               </button>
@@ -271,10 +243,15 @@ export default function ProjectGrid({ projects, isLoading = false, showFilters =
               <SkeletonCard />
               <SkeletonCard />
             </>
+          ) : projects.length === 0 ? (
+            <div className="col-span-12 py-20 text-center"
+              style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: 'rgba(26,26,26,0.35)' }}>
+              No projects to display.
+            </div>
           ) : (
             filtered.map((project, i) => (
               <ProjectCard
-                key={project.id}
+                key={project._id}
                 project={project}
                 index={i}
                 layout={getLayout(i)}

@@ -25,8 +25,8 @@ const ContactPage   = lazy(() => import('@/pages/ContactPage'));
 const AdminLogin    = lazy(() => import('@/pages/admin/AdminLoginPage'));
 const AdminDash     = lazy(() => import('@/pages/admin/AdminDashboard'));
 const AdminServices = lazy(() => import('@/pages/admin/AdminServices'));   // ← NEW
-// const AdminProjects = lazy(() => import('@/pages/admin/AdminProjects'));
-// const AdminProjForm = lazy(() => import('@/pages/admin/AdminProjectForm'));
+const AdminProjects = lazy(() => import('@/pages/admin/AdminProjects'));
+const AdminProjForm = lazy(() => import('@/pages/admin/AdminProjectForm'));
 // const AdminBlog     = lazy(() => import('@/pages/admin/AdminBlog'));
 // const AdminEnqs     = lazy(() => import('@/pages/admin/AdminEnquiries'));
 // const AdminTeam     = lazy(() => import('@/pages/admin/AdminTeam'));
@@ -74,9 +74,9 @@ const router = createBrowserRouter([
         children: [
           { index: true,               element: w(<AdminDash />)     },
           { path: 'services',          element: w(<AdminServices />) }, // ← NEW
-          // { path: 'projects',          element: w(<AdminProjects />) },
-          // { path: 'projects/new',      element: w(<AdminProjForm />) },
-          // { path: 'projects/:id/edit', element: w(<AdminProjForm />) },
+          { path: 'projects',          element: w(<AdminProjects />) },
+          { path: 'projects/new',      element: w(<AdminProjForm />) },
+          { path: 'projects/:id/edit', element: w(<AdminProjForm />) },
           // { path: 'blog',              element: w(<AdminBlog />)     },
           // { path: 'enquiries',         element: w(<AdminEnqs />)     },
           // { path: 'team',              element: w(<AdminTeam />)     },

@@ -10,6 +10,8 @@ import { globalRateLimit } from './middleware/rateLimit.middleware';
 import { errorHandler, notFound } from './middleware/error.middleware';
 import apiRouter from './routes/index';
 import serviceRoutes from './routes/service.routes';
+// import dashboardRoutes from './routes/dashboard.routes';  
+import projectRoutes from './routes/project.routes';
 
 const app = express();
 
@@ -53,6 +55,8 @@ app.get('/api/v1/health', (_req, res) => {
 // ── All API routes
 app.use('/api/v1', apiRouter);
 app.use("/api/v1/services", serviceRoutes);
+// app.use("/api/v1/dashboard", require("./routes/dashboard.routes").default);
+app.use("/api/v1/projects", projectRoutes);
 
 
 // ── 404 handler (must be after all routes)

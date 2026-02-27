@@ -1,15 +1,8 @@
 import { Document } from 'mongoose';
 
-// ...your existing interfaces stay untouched
-export interface IProject extends Document {
-  // whatever you already have
-}
+// Model interfaces live in their own model files (e.g. Project.model.ts).
+// This file is reserved for shared/cross-cutting types.
 
-export interface IBlogPost extends Document {
-  // whatever you already have
-}
-
-// Add this new one at the bottom
 export interface IUser extends Document {
   _id: string;
   email: string;

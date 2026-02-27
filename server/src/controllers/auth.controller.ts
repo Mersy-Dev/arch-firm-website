@@ -84,7 +84,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
       200,
       {
         accessToken,
-        user: { email: user.email, role: user.role },
+        user: {name: user.name, email: user.email, role: user.role },
       },
       'Login successful',
     ),

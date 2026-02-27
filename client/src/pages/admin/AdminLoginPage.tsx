@@ -9,6 +9,7 @@ import { Eye, EyeOff, Lock, Mail, AlertCircle } from 'lucide-react';
 import { useLoginMutation } from '@/services/authApi';
 import { setCredentials, selectIsAuthenticated } from '@/features/auth/authSlice';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { log } from 'console';
 
 // ─── Validation ────────────────────────────────────────────────────────────
 
@@ -54,6 +55,7 @@ export default function AdminLoginPage() {
         })
       );
       toast.success(`Welcome back, ${result.data.user.name}`);
+      console.log('Login successful:', result);
       const from =
         (location.state as { from?: { pathname: string } })?.from?.pathname || '/admin';
       navigate(from, { replace: true });

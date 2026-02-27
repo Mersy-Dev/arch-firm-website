@@ -4,10 +4,14 @@ import ProjectGrid         from '@/components/sections/ProjectGrid';
 import ServicesList        from '@/components/sections/ServicesList';
 import TestimonialCarousel from '@/components/sections/TestimonialCarousel';
 import CTABanner           from '@/components/sections/CTABanner';
-import { useGetFeaturedProjectsQuery } from '@/services/projectsApi';
+import { useGetProjectsQuery } from '@/services/projectsApi';
 
 export default function HomePage() {
-  const { data: featured, isLoading } = useGetFeaturedProjectsQuery();
+  const { data: featured, isLoading } = useGetProjectsQuery({ 
+    featured: 'true', 
+    published: 'true', 
+    limit: 6,
+  });
 
   return (
     <>
@@ -16,7 +20,7 @@ export default function HomePage() {
         <meta name="description" content="Award-winning architecture firm." />
       </Helmet>
       <HeroSection />
-      <ProjectGrid projects={featured?.data ?? []} isLoading={isLoading} showFilters={false} />
+      <ProjectGrid projects={featured?.data.projects ?? []} isLoading={isLoading} showFilters={false} />
       <ServicesList />
       <TestimonialCarousel />
       <CTABanner headline="Have a project in mind?" ctaLink="/contact" />

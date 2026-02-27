@@ -1,244 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-interface GalleryImage {
-  src:     string;
-  caption: string;
-  span?:   'wide' | 'normal';
-}
-interface SpecItem { label: string; value: string; }
-
-interface ProjectDetail {
-  id:        number;
-  slug:      string;
-  title:     string;
-  category:  string;
-  year:      number;
-  location:  string;
-  area:      string;
-  client:    string;
-  duration:  string;
-  program:   string;
-  status:    'Completed' | 'On Site' | 'In Design';
-  featured:  boolean;
-  cover:     string;
-  coverAlt:  string;
-  tags:      string[];
-  pullQuote: string;           // large editorial pull-quote
-  overview:  string;
-  challenge: string;
-  approach:  string;
-  outcome:   string;
-  gallery:   GalleryImage[];
-  specs:     SpecItem[];
-  team:      string[];
-  awards:    string[];
-  nextSlug:  string;
-  prevSlug:  string;
-}
-
-// ─── Data ─────────────────────────────────────────────────────────────────────
-const PROJECTS: ProjectDetail[] = [
-  {
-    id: 1, slug: 'silhouette-residence',
-    title: 'Silhouette Residence', category: 'Residential',
-    year: 2024, location: 'Hudson Valley, NY', area: '620 m²',
-    client: 'Private', duration: '28 months',
-    program: 'Private Residence',
-    status: 'Completed', featured: true,
-    cover:    'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1800&q=85&fit=crop',
-    coverAlt: 'Silhouette Residence — Hudson Valley',
-    tags: ['Passive Design', 'Stone', 'Landscape'],
-    pullQuote: 'A house that has learned from its landscape rather than imposed upon it.',
-    overview:  'Set against the rolling folds of the Hudson Valley, this residence is conceived as a single unbroken form — a long horizontal bar of bluestone and timber that appears to float above the meadow. The house turns its back to the road and opens entirely to the south-facing slope, creating a sequence of interior spaces calibrated around the movement of light across a day and a year.',
-    challenge: 'The site presented two competing demands: complete privacy from the county road to the north, and total openness to the landscape to the south. The clients also required the house to operate entirely on passive means — no mechanical heating or cooling — placing precise constraints on orientation, glazing ratios, and thermal mass.',
-    approach:  'We resolved the privacy paradox with a 1.2m earth berm along the northern edge, allowing the ground floor to sit below sightlines while the upper storey — clad entirely in reclaimed Douglas fir — floats visibly above. The thermal mass of the bluestone floor stores solar gain through winter, while deep roof overhangs calibrated to the summer solstice shade the glazing entirely in August.',
-    outcome:   'The completed house meets Passive House performance without certification. It consumes 94% less energy than a code-minimum equivalent. The AIA Hudson Valley jury described it as "a building at complete peace with its site."',
-    gallery: [
-      { src: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1400&q=80&fit=crop', caption: 'South elevation at dusk — Douglas fir cladding above bluestone plinth', span: 'wide' },
-      { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80&fit=crop', caption: 'Main living space — full south glazing with deep overhangs' },
-      { src: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=900&q=80&fit=crop', caption: 'Entry sequence — compressed approach beneath the earth berm' },
-      { src: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1400&q=80&fit=crop', caption: 'View from the meadow — the house reads as a single landform', span: 'wide' },
-      { src: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80&fit=crop', caption: 'Master bedroom — east-facing clerestory for morning light' },
-      { src: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&q=80&fit=crop', caption: 'Kitchen — bluestone counters continue the exterior material palette' },
-    ],
-    specs: [
-      { label: 'Site Area',       value: '4.2 acres'            },
-      { label: 'Floor Area',      value: '620 m² / 6,670 ft²'   },
-      { label: 'Structure',       value: 'Timber frame + CLT'   },
-      { label: 'Cladding',        value: 'Reclaimed Douglas fir' },
-      { label: 'Energy Standard', value: 'Passive House level'  },
-      { label: 'Glazing Ratio',   value: '38% south / 6% north' },
-      { label: 'Completed',       value: 'March 2024'           },
-      { label: 'Contractor',      value: 'Hearthstone Build Co.'},
-    ],
-    team:   ['Principal Architect', 'Project Architect', 'Landscape Architect', 'Structural Engineer'],
-    awards: ['AIA Hudson Valley Design Award 2024', 'Dezeen Architecture Award — Residential'],
-    nextSlug: 'meridian-tower',
-    prevSlug: 'parkline-tower',
-  },
-  {
-    id: 2, slug: 'meridian-tower',
-    title: 'The Meridian Tower', category: 'Commercial',
-    year: 2023, location: 'Manhattan, NY', area: '18,400 m²',
-    client: 'Meridian Properties LLC', duration: '52 months',
-    program: 'Mixed-Use: Office / Retail / Residential',
-    status: 'Completed', featured: true,
-    cover:    'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1800&q=85&fit=crop',
-    coverAlt: 'Meridian Tower — Manhattan',
-    tags: ['LEED Gold', 'Mixed-Use', 'High-rise'],
-    pullQuote: 'The colonnade became one of the most used pedestrian connections in the neighbourhood the week it opened.',
-    overview:  'At 34 storeys, the Meridian Tower occupies a complex mid-block site in the Flatiron district. The brief called for ground-level retail, twelve floors of flexible office space, and twenty floors of residential above — each programme requiring its own structural expression while reading as a coherent whole from the street.',
-    challenge: 'The site sits at the junction of three zoning districts with competing setback requirements, FAR caps, and an existing easement for a 19th-century alley. Resolving these constraints while maximising leasable floor plates required six months of envelope studies before a line was drawn.',
-    approach:  'The tower steps back twice — at the office-to-residential transition and again at the crown — following the zoning envelope precisely while giving the building a distinctive silhouette. The street-level retail pavilion is set back 3.5m from the building line, creating a covered colonnade that became an informal public thoroughfare.',
-    outcome:   'Office occupancy reached 94% within eight months of opening. The project achieved LEED Gold primarily through its massing strategy rather than technology — proving that good urbanism is the most effective sustainability tool.',
-    gallery: [
-      { src: 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1400&q=80&fit=crop', caption: 'West façade — the two setbacks visible against the Manhattan skyline', span: 'wide' },
-      { src: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&q=80&fit=crop', caption: 'Ground-floor colonnade — the civic gift at street level' },
-      { src: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&q=80&fit=crop', caption: 'Typical office floor — 1,500 m² column-free plate' },
-      { src: 'https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=1400&q=80&fit=crop', caption: 'Crown detail — terracotta panels reference the district\'s masonry heritage', span: 'wide' },
-      { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80&fit=crop', caption: 'Residential lobby — warm materials contrast with commercial volumes' },
-      { src: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=900&q=80&fit=crop', caption: 'Rooftop terrace — shared amenity between office and residential tenants' },
-    ],
-    specs: [
-      { label: 'Storeys',       value: '34 floors'                    },
-      { label: 'Floor Area',    value: '18,400 m²'                    },
-      { label: 'Structure',     value: 'Concrete core + structural steel' },
-      { label: 'Façade',        value: 'Terracotta + unitised glazing' },
-      { label: 'Certification', value: 'LEED Gold'                    },
-      { label: 'Office',        value: 'Levels 3 – 14'                },
-      { label: 'Residential',   value: 'Levels 15 – 34 (180 units)'   },
-      { label: 'Completed',     value: 'November 2023'                },
-    ],
-    team:   ['Principal Architect', '2× Project Architects', 'Urban Designer', 'MEP Engineer', 'Façade Consultant'],
-    awards: ['CTBUH Urban Habitat Award 2023', 'NYC AIA Design Award — Commercial'],
-    nextSlug: 'kaia-cultural-centre',
-    prevSlug: 'silhouette-residence',
-  },
-  {
-    id: 3, slug: 'kaia-cultural-centre',
-    title: 'Kaia Cultural Centre', category: 'Cultural',
-    year: 2023, location: 'London, UK', area: '4,200 m²',
-    client: 'London Borough of Southwark / Kaia Trust', duration: '38 months',
-    program: 'Cultural Centre: Performance / Exhibition / Community',
-    status: 'Completed', featured: true,
-    cover:    'https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=1800&q=85&fit=crop',
-    coverAlt: 'Kaia Cultural Centre — London',
-    tags: ['RIBA Award', 'Community', 'Concrete'],
-    pullQuote: 'A building that has the confidence to be quiet — and the warmth to be loved.',
-    overview:  'Kaia is a cultural centre for a diverse Southwark community that had been consulting for three years before FORMA was appointed. The brief was unusually clear because the community had written it themselves: a 250-seat performance space, a double-height exhibition gallery, flexible meeting rooms, a late-night café, and a roof terrace that belongs to everyone.',
-    challenge: 'The available budget — £12.4m — was tight for a 4,200m² public building in central London. Every structural and material decision was tested against cost, longevity, and the ability of the community to maintain the building themselves without specialist contractors.',
-    approach:  'We chose in-situ board-formed concrete for the primary structure — expensive to form, but requiring zero maintenance and gaining character with age. The performance hall is a simple rectangular concrete box with a demountable timber acoustic lining that transforms reverberation time from 0.6s (speech) to 1.8s (music) in under an hour.',
-    outcome:   'The building opened six weeks early and £180,000 under budget. In its first year, 87,000 people passed through it. The RIBA jury called it "a masterclass in doing more with less without anyone feeling shortchanged."',
-    gallery: [
-      { src: 'https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=1400&q=80&fit=crop', caption: 'Main entrance — board-formed concrete and reclaimed brick in dialogue', span: 'wide' },
-      { src: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&q=80&fit=crop', caption: 'Performance hall — the demountable acoustic lining in concert configuration' },
-      { src: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=900&q=80&fit=crop', caption: 'Double-height gallery — flexible hanging and display system' },
-      { src: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1400&q=80&fit=crop', caption: 'Roof terrace — the community\'s shared outdoor room', span: 'wide' },
-      { src: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80&fit=crop', caption: 'Café interior — open 7am to midnight every day' },
-      { src: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=900&q=80&fit=crop', caption: 'Central stair — the building\'s social spine' },
-    ],
-    specs: [
-      { label: 'Floor Area',      value: '4,200 m²'                    },
-      { label: 'Structure',       value: 'In-situ board-formed concrete' },
-      { label: 'Performance',     value: '250-seat flexible hall'       },
-      { label: 'Gallery',         value: '480 m² double-height'         },
-      { label: 'Budget',          value: '£12.4m'                       },
-      { label: 'Acoustic Range',  value: 'RT 0.6s – 1.8s'              },
-      { label: 'Completed',       value: 'June 2023'                    },
-      { label: 'Contractor',      value: 'Osborne Ltd'                  },
-    ],
-    team:   ['Principal Architect', 'Project Architect', 'Acoustic Engineer', 'Lighting Designer'],
-    awards: ['RIBA National Award 2023', 'Dezeen Award — Public & Civic', 'AJ Architecture Award'],
-    nextSlug: 'dunes-private-villa',
-    prevSlug: 'meridian-tower',
-  },
-  {
-    id: 4, slug: 'dunes-private-villa',
-    title: 'Dunes Private Villa', category: 'Residential',
-    year: 2022, location: 'Dubai, UAE', area: '1,100 m²',
-    client: 'Private', duration: '34 months',
-    program: 'Private Residence + Guest Pavilion',
-    status: 'Completed', featured: false,
-    cover:    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1800&q=85&fit=crop',
-    coverAlt: 'Dunes Villa — Dubai',
-    tags: ['Desert Climate', 'Luxury', 'Courtyard'],
-    pullQuote: 'Desert living distilled to its most elemental — shade, water, stone, and sky.',
-    overview:  'A private residence on the Dubai outskirts that draws from the deep logic of courtyard architecture — turning inward to create a private world of water, stone, and shade, while its desert-facing walls are largely blind.',
-    challenge: 'Extreme heat, relentless glare, and a desire for outdoor living that extends well beyond the temperate months. The client wanted a pool that could be used year-round — including at midday in July.',
-    approach:  'The house is organised as four pavilions around a sunken central courtyard, with a 22m lap pool running its full length. A woven steel screen along the south edge filters direct sunlight while admitting breeze. All glazing faces the courtyard; the external perimeter is solid stone.',
-    outcome:   'The courtyard microclimate reduces ambient temperature by 7–9°C compared to the surrounding landscape, enabling genuine outdoor occupation for ten months of the year.',
-    gallery: [
-      { src: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1400&q=80&fit=crop', caption: 'Central courtyard — the pool as thermal regulator and visual anchor', span: 'wide' },
-      { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80&fit=crop', caption: 'Main pavilion terrace — shaded overhang overlooking the pool' },
-      { src: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=900&q=80&fit=crop', caption: 'Woven steel screen — shadow patterns shift and move across the day' },
-      { src: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1400&q=80&fit=crop', caption: 'Aerial view — the house as a walled garden in the desert', span: 'wide' },
-    ],
-    specs: [
-      { label: 'Site Area',  value: '3,800 m²'            },
-      { label: 'Floor Area', value: '1,100 m²'            },
-      { label: 'Structure',  value: 'Reinforced concrete' },
-      { label: 'Screen',     value: 'Woven Corten steel'  },
-      { label: 'Pool',       value: '22m lap pool'        },
-      { label: 'Completed',  value: 'September 2022'      },
-    ],
-    team:   ['Principal Architect', 'Project Architect', 'Landscape Architect'],
-    awards: ['Middle East Architecture Award 2022'],
-    nextSlug: 'canopy-pavilion',
-    prevSlug: 'kaia-cultural-centre',
-  },
-  {
-    id: 9, slug: 'arena-district',
-    title: 'Arena District', category: 'Public',
-    year: 2024, location: 'Amsterdam, NL', area: '12,000 m²',
-    client: 'City of Amsterdam / Arena Development BV', duration: '60 months (ongoing)',
-    program: 'Mixed-Use Urban Quarter',
-    status: 'In Design', featured: true,
-    cover:    'https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1800&q=85&fit=crop',
-    coverAlt: 'Arena District — Amsterdam',
-    tags: ['Urban', 'Master Plan', 'Public Realm'],
-    pullQuote: 'A city district designed around how people move, gather, and grow over decades.',
-    overview:  'A major mixed-use district on a former industrial site in Amsterdam Southeast. The masterplan delivers 1,200 homes, 35,000m² of office space, and 8,000m² of retail and cultural uses, woven together by public green corridors connecting the district to the adjacent Bijlmer Park.',
-    challenge: 'The site is bounded by an elevated metro viaduct to the west — a significant noise challenge — and a fragmented plot ownership structure requiring phased delivery over fifteen years while maintaining visual and urban coherence.',
-    approach:  'The masterplan is structured around two primary moves: a diagonal green spine threading through the site perpendicular to the metro, and a series of residential courts that turn their backs to the viaduct while opening to the south. The spine widens towards the park, creating a sequence of public spaces from intimate to generous.',
-    outcome:   'Phase 1 (280 homes + public realm) breaks ground Q2 2025. The design code has been adopted by the municipality as the planning framework for the entire site through to 2034.',
-    gallery: [
-      { src: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1400&q=80&fit=crop', caption: 'Masterplan visualisation — the green spine threading the district', span: 'wide' },
-      { src: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&q=80&fit=crop', caption: 'Phase 1 public square — the district\'s civic heart' },
-      { src: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=900&q=80&fit=crop', caption: 'Residential typology study — varied rooflines for street character' },
-      { src: 'https://images.unsplash.com/photo-1503708928676-1cb796a0891e?w=1400&q=80&fit=crop', caption: 'Green corridor — connecting the district to Bijlmer Park', span: 'wide' },
-    ],
-    specs: [
-      { label: 'Site Area',    value: '14.5 ha'     },
-      { label: 'Homes',        value: '1,200 units' },
-      { label: 'Office',       value: '35,000 m²'   },
-      { label: 'Public Realm', value: '4.2 ha'      },
-      { label: 'Phase 1',      value: 'Q2 2025'     },
-      { label: 'Completion',   value: '2034 (est.)' },
-    ],
-    team:   ['Principal Architect', 'Urban Designer', '3× Project Architects', 'Landscape Architect', 'Transport Planner'],
-    awards: ['Dutch Design Award — Shortlisted 2024'],
-    nextSlug: 'silhouette-residence',
-    prevSlug: 'dunes-private-villa',
-  },
-  // Stub entries for remaining slugs so prev/next links resolve
-  ...['canopy-pavilion','westgate-conversion','grove-headquarters','harbour-house','foundry-arts','cedar-house','parkline-tower'].map((slug, i) => ({
-    id: 10 + i, slug,
-    title: slug.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' '),
-    category: 'Residential' as const, year: 2022, location: 'Various', area: '—',
-    client: 'Private', duration: '—', program: '—',
-    status: 'Completed' as const, featured: false,
-    cover: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1800&q=85&fit=crop',
-    coverAlt: slug,
-    tags: [], pullQuote: '',
-    overview: '', challenge: '', approach: '', outcome: '',
-    gallery: [], specs: [], team: [], awards: [],
-    nextSlug: 'silhouette-residence',
-    prevSlug: 'arena-district',
-  })),
-];
+import { useGetProjectBySlugQuery, useGetProjectsQuery } from '@/services/projectsApi';
+import type { Project } from '@/types/project.types';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 function useReveal(threshold = 0.1) {
@@ -274,11 +38,29 @@ function ReadingProgress() {
   );
 }
 
+// ─── Hero skeleton ────────────────────────────────────────────────────────────
+function HeroSkeleton() {
+  return (
+    <div className="relative overflow-hidden animate-pulse"
+      style={{ height: 'clamp(520px, 78vh, 900px)', background: '#0d1a26' }}>
+      <div className="container-main absolute inset-0 flex flex-col justify-between py-10 md:py-14">
+        <div style={{ width: 180, height: 10, background: 'rgba(255,255,255,0.07)' }} />
+        <div>
+          <div style={{ width: 120, height: 10, background: 'rgba(255,255,255,0.06)', marginBottom: 24 }} />
+          <div style={{ width: '55%', height: 88, background: 'rgba(255,255,255,0.07)', marginBottom: 20 }} />
+          <div style={{ width: '35%', height: 12, background: 'rgba(255,255,255,0.05)' }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Parallax hero ────────────────────────────────────────────────────────────
-function Hero({ project }: { project: ProjectDetail }) {
+function Hero({ project }: { project: Project }) {
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
   const imgY = useTransform(scrollY, [0, 700], [0, 180]);
+  const year = new Date(project.completedAt).getFullYear();
 
   return (
     <div ref={heroRef} className="relative overflow-hidden"
@@ -286,11 +68,15 @@ function Hero({ project }: { project: ProjectDetail }) {
 
       {/* Parallax background */}
       <motion.div
-        style={{ y: imgY, position: 'absolute', inset: '-18% 0', backgroundImage: `url('${project.cover}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+        style={{
+          y: imgY, position: 'absolute', inset: '-18% 0',
+          backgroundImage: `url('${project.coverImage.url}')`,
+          backgroundSize: 'cover', backgroundPosition: 'center',
+        }}
         aria-hidden="true"
       />
 
-      {/* Layered gradient — strong at bottom, gentle at top */}
+      {/* Layered gradient */}
       <div className="absolute inset-0" style={{
         background: 'linear-gradient(to bottom, rgba(13,26,38,0.3) 0%, rgba(13,26,38,0.25) 35%, rgba(13,26,38,0.75) 72%, rgba(13,26,38,0.97) 100%)',
       }} aria-hidden="true" />
@@ -305,7 +91,7 @@ function Hero({ project }: { project: ProjectDetail }) {
       {/* Content */}
       <div className="container-main absolute inset-0 flex flex-col justify-between py-10 md:py-14">
 
-        {/* Top: breadcrumb */}
+        {/* Breadcrumb */}
         <motion.nav
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -335,7 +121,7 @@ function Hero({ project }: { project: ProjectDetail }) {
 
         {/* Bottom: title block */}
         <div>
-          {/* Category + status pill */}
+          {/* Category + status */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -345,27 +131,28 @@ function Hero({ project }: { project: ProjectDetail }) {
             <div className="flex items-center gap-2.5">
               <div style={{ width: 28, height: 1, background: 'var(--color-gold)', flexShrink: 0 }}/>
               <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.62rem',
-                letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--color-gold)', fontWeight: 500 }}>
-                {project.category}
+                letterSpacing: '0.3em', textTransform: 'uppercase',
+                color: 'var(--color-gold)', fontWeight: 500 }}>
+                {project.type}
               </span>
             </div>
-            {project.status !== 'Completed' && (
+            {!project.published && (
               <>
                 <span style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.2)', display: 'block', flexShrink: 0 }}/>
                 <span style={{
                   fontFamily: 'var(--font-body)', fontSize: '0.56rem',
                   letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 600,
-                  color: project.status === 'On Site' ? 'var(--color-gold)' : 'rgba(255,255,255,0.6)',
+                  color: 'rgba(255,255,255,0.6)',
                   background: 'rgba(10,18,28,0.55)', backdropFilter: 'blur(8px)', padding: '3px 10px',
                 }}>
-                  ● {project.status}
+                  ● Draft
                 </span>
               </>
             )}
           </motion.div>
 
-          {/* Title — word-by-word reveal (mirrors PortfolioPage hero) */}
-          <h1 className="mb-6" style={{ margin: '0 0 1.5rem' }}>
+          {/* Title */}
+          <h1 style={{ margin: '0 0 1.5rem' }}>
             {project.title.split(' ').map((word, i, arr) => (
               <motion.span
                 key={`${word}-${i}`}
@@ -396,10 +183,10 @@ function Hero({ project }: { project: ProjectDetail }) {
             className="flex flex-wrap items-center gap-x-7 gap-y-3"
           >
             {[
-              { label: 'Location', value: project.location },
-              { label: 'Year',     value: String(project.year) },
-              { label: 'Area',     value: project.area },
-              { label: 'Client',   value: project.client },
+              { label: 'Location', value: project.location ?? '—' },
+              { label: 'Year',     value: String(year) },
+              { label: 'Area',     value: project.area ? `${project.area} m²` : '—' },
+              { label: 'Client',   value: 'Private' },
             ].map(({ label, value }, i) => (
               <div key={label} className="flex items-center gap-2.5">
                 {i > 0 && <span style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.15)', display: 'block', flexShrink: 0 }}/>}
@@ -424,11 +211,11 @@ function Hero({ project }: { project: ProjectDetail }) {
 }
 
 // ─── Tags strip ───────────────────────────────────────────────────────────────
-function TagsStrip({ tags, awards }: { tags: string[]; awards: string[] }) {
+function TagsStrip({ project }: { project: Project }) {
   return (
     <div style={{ borderBottom: '1px solid rgba(26,26,26,0.07)', background: 'var(--color-bg)' }}>
       <div className="container-main py-4 flex flex-wrap items-center gap-3">
-        {tags.map(tag => (
+        {project.services.map(tag => (
           <span key={tag} style={{
             fontFamily: 'var(--font-body)', fontSize: '0.62rem',
             letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 400,
@@ -437,20 +224,14 @@ function TagsStrip({ tags, awards }: { tags: string[]; awards: string[] }) {
             padding: '3px 12px',
           }}>{tag}</span>
         ))}
-        {awards.slice(0, 2).map(award => (
-          <span key={award} className="flex items-center gap-1.5" style={{
+        {project.materials?.slice(0, 3).map(mat => (
+          <span key={mat} style={{
             fontFamily: 'var(--font-body)', fontSize: '0.62rem',
-            letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 500,
-            color: '#8a6a1f',
-            background: 'rgba(201,168,76,0.1)',
-            border: '1px solid rgba(201,168,76,0.2)',
-            padding: '3px 10px',
-          }}>
-            <svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="var(--color-gold)" strokeWidth="1.4">
-              <polygon points="5,1 6.2,3.6 9,4.1 7,6 7.5,8.9 5,7.5 2.5,8.9 3,6 1,4.1 3.8,3.6"/>
-            </svg>
-            {award.split(' — ')[0].replace(/\d{4}/, '').trim()}
-          </span>
+            letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 400,
+            color: 'rgba(26,26,26,0.38)',
+            border: '1px solid rgba(26,26,26,0.07)',
+            padding: '3px 12px',
+          }}>{mat}</span>
         ))}
       </div>
     </div>
@@ -459,12 +240,11 @@ function TagsStrip({ tags, awards }: { tags: string[]; awards: string[] }) {
 
 // ─── Sticky side nav ──────────────────────────────────────────────────────────
 const SECTIONS = [
-  { id: 'overview',  label: 'Overview'  },
-  { id: 'challenge', label: 'Challenge' },
-  { id: 'approach',  label: 'Approach'  },
-  { id: 'outcome',   label: 'Outcome'   },
-  { id: 'gallery',   label: 'Gallery'   },
-  { id: 'specs',     label: 'Specs'     },
+  { id: 'overview',   label: 'Overview'   },
+  { id: 'challenge',  label: 'Brief'      },
+  { id: 'approach',   label: 'Approach'   },
+  { id: 'gallery',    label: 'Gallery'    },
+  { id: 'specs',      label: 'Specs'      },
 ];
 
 function SideNav() {
@@ -520,9 +300,8 @@ function SideNav() {
 }
 
 // ─── Text narrative section ───────────────────────────────────────────────────
-function NarrativeSection({ id, eyebrow, heading, body, hasPullQuote, pullQuote }: {
-  id: string; eyebrow: string; heading: string; body: string;
-  hasPullQuote?: boolean; pullQuote?: string;
+function NarrativeSection({ id, eyebrow, heading, body, pullQuote }: {
+  id: string; eyebrow: string; heading: string; body: string; pullQuote?: string;
 }) {
   const { ref, vis } = useReveal(0.12);
   return (
@@ -534,7 +313,6 @@ function NarrativeSection({ id, eyebrow, heading, body, hasPullQuote, pullQuote 
       className="py-12 md:py-14"
       style={{ borderTop: '1px solid rgba(26,26,26,0.07)' }}
     >
-      {/* Eyebrow */}
       <div className="flex items-center gap-3 mb-5">
         <div style={{ width: 22, height: 1, background: 'var(--color-gold)', flexShrink: 0 }}/>
         <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.6rem',
@@ -544,7 +322,6 @@ function NarrativeSection({ id, eyebrow, heading, body, hasPullQuote, pullQuote 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
-        {/* Heading col */}
         <div className="md:col-span-4">
           <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 300,
             fontSize: 'clamp(1.65rem, 3vw, 2.8rem)', color: 'var(--color-ink)',
@@ -552,31 +329,24 @@ function NarrativeSection({ id, eyebrow, heading, body, hasPullQuote, pullQuote 
             {heading}
           </h2>
         </div>
-        {/* Body col */}
         <div className="md:col-span-8">
           <p style={{ fontFamily: 'var(--font-body)', fontWeight: 300,
             fontSize: 'clamp(0.9rem, 1.1vw, 1.02rem)', lineHeight: 1.88,
             color: 'rgba(26,26,26,0.62)', margin: 0 }}>
             {body}
           </p>
-          {/* Inline pull-quote for overview section */}
-          {hasPullQuote && pullQuote && (
+          {pullQuote && (
             <motion.blockquote
               initial={{ opacity: 0, x: -12 }}
               animate={vis ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.65, delay: 0.25 }}
-              className="mt-8 mb-0"
-              style={{
-                margin: '2.5rem 0 0',
-                paddingLeft: '1.5rem',
-                borderLeft: '2px solid var(--color-gold)',
-              }}
+              style={{ margin: '2.5rem 0 0', paddingLeft: '1.5rem',
+                borderLeft: '2px solid var(--color-gold)' }}
             >
               <p style={{ fontFamily: 'var(--font-display)', fontWeight: 300,
                 fontStyle: 'italic', fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)',
                 color: 'var(--color-ink)', lineHeight: 1.4, margin: 0,
-                letterSpacing: '-0.01em',
-              }}>
+                letterSpacing: '-0.01em' }}>
                 "{pullQuote}"
               </p>
             </motion.blockquote>
@@ -588,7 +358,7 @@ function NarrativeSection({ id, eyebrow, heading, body, hasPullQuote, pullQuote 
 }
 
 // ─── Full-bleed image break ───────────────────────────────────────────────────
-function ImageBreak({ src, caption }: { src: string; caption: string }) {
+function ImageBreak({ src, caption }: { src: string; caption?: string }) {
   const { ref, vis } = useReveal(0.06);
   return (
     <motion.div
@@ -599,27 +369,28 @@ function ImageBreak({ src, caption }: { src: string; caption: string }) {
       className="relative overflow-hidden"
       style={{ aspectRatio: '21/8', margin: '0 calc(-1 * var(--container-px, 1.5rem))', background: 'rgba(26,60,94,0.06)' }}
     >
-      <img src={src} alt={caption} loading="lazy"
+      <img src={src} alt={caption ?? ''} loading="lazy"
         className="w-full h-full object-cover"
         style={{ transition: 'transform 12s ease', transform: vis ? 'scale(1.03)' : 'scale(1.08)' }}
       />
       <div className="absolute inset-0"
         style={{ background: 'linear-gradient(to top, rgba(10,18,28,0.45) 0%, transparent 40%)' }}/>
-      <p className="absolute bottom-0 right-0 mb-4 mr-5"
-        style={{ fontFamily: 'var(--font-body)', fontSize: '0.66rem', fontStyle: 'italic',
-          color: 'rgba(255,255,255,0.5)', margin: '0 1.25rem 1rem 0' }}>
-        {caption}
-      </p>
+      {caption && (
+        <p className="absolute bottom-0 right-0"
+          style={{ fontFamily: 'var(--font-body)', fontSize: '0.66rem', fontStyle: 'italic',
+            color: 'rgba(255,255,255,0.5)', margin: '0 1.25rem 1rem 0' }}>
+          {caption}
+        </p>
+      )}
     </motion.div>
   );
 }
 
 // ─── Gallery ──────────────────────────────────────────────────────────────────
-function Gallery({ images }: { images: GalleryImage[] }) {
+function Gallery({ images }: { images: Project['images'] }) {
   const { ref, vis } = useReveal(0.06);
   const [lightbox, setLightbox] = useState<number | null>(null);
 
-  // Close lightbox on Escape
   useEffect(() => {
     if (lightbox === null) return;
     const fn = (e: KeyboardEvent) => {
@@ -630,6 +401,8 @@ function Gallery({ images }: { images: GalleryImage[] }) {
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
   }, [lightbox, images.length]);
+
+  if (!images || images.length === 0) return null;
 
   return (
     <section ref={ref} id="gallery"
@@ -654,26 +427,31 @@ function Gallery({ images }: { images: GalleryImage[] }) {
 
       <div className="grid grid-cols-12 gap-3 md:gap-4">
         {images.map((img, i) => {
-          const isWide = img.span === 'wide';
+          // Every 6-image cycle: 0→wide(16/9), 1→tall(3/4), 2-4→normal(4/3), 5→wide(16/9)
+          const pos     = i % 6;
+          const isWide  = pos === 0 || pos === 5;
+          const isTall  = pos === 1;
+          const colSpan = isWide ? 'col-span-12 md:col-span-8' : isTall ? 'col-span-12 md:col-span-4' : 'col-span-12 sm:col-span-6 md:col-span-4';
+          const aspect  = isWide ? '16/9' : isTall ? '3/4' : '4/3';
+
           return (
             <motion.div
-              key={i}
-              className={isWide ? 'col-span-12 md:col-span-8' : 'col-span-12 sm:col-span-6 md:col-span-4'}
+              key={img.publicId ?? i}
+              className={colSpan}
               initial={{ opacity: 0, y: 28 }}
               animate={vis ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.65, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
             >
               <button className="group w-full text-left focus:outline-none block"
-                onClick={() => setLightbox(i)} aria-label={`Enlarge: ${img.caption}`}>
+                onClick={() => setLightbox(i)} aria-label={`Enlarge image ${i + 1}`}>
                 <div className="relative overflow-hidden"
-                  style={{ aspectRatio: isWide ? '16/9' : '4/3', background: 'rgba(26,60,94,0.05)' }}>
-                  <img src={img.src} alt={img.caption} loading="lazy"
+                  style={{ aspectRatio: aspect, background: 'rgba(26,60,94,0.05)' }}>
+                  <img src={img.url} alt={`Project image ${i + 1}`} loading="lazy"
                     className="w-full h-full object-cover"
                     style={{ transition: 'transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94)' }}
                     onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
                     onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
                   />
-                  {/* Hover scrim + expand icon */}
                   <div className="absolute inset-0 flex items-end justify-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     style={{ background: 'linear-gradient(135deg, transparent 60%, rgba(26,60,94,0.55) 100%)' }}>
                     <div style={{ width: 36, height: 36, borderRadius: '50%',
@@ -686,10 +464,6 @@ function Gallery({ images }: { images: GalleryImage[] }) {
                     </div>
                   </div>
                 </div>
-                <p className="mt-2.5" style={{ fontFamily: 'var(--font-body)', fontSize: '0.68rem',
-                  fontWeight: 300, fontStyle: 'italic', color: 'rgba(26,26,26,0.4)', lineHeight: 1.45 }}>
-                  {img.caption}
-                </p>
               </button>
             </motion.div>
           );
@@ -717,20 +491,14 @@ function Gallery({ images }: { images: GalleryImage[] }) {
               onClick={e => e.stopPropagation()}
               style={{ margin: 0 }}
             >
-              <img src={images[lightbox].src} alt={images[lightbox].caption}
+              <img src={images[lightbox].url} alt={`Image ${lightbox + 1}`}
                 className="w-full object-contain" style={{ maxHeight: '78vh' }}/>
-              <figcaption className="mt-4 flex items-center justify-between gap-4">
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.7rem',
-                  color: 'rgba(255,255,255,0.38)', fontStyle: 'italic', margin: 0 }}>
-                  {images[lightbox].caption}
-                </p>
+              <figcaption className="mt-4 flex items-center justify-end">
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.6rem',
                   letterSpacing: '0.12em', color: 'rgba(255,255,255,0.25)', flexShrink: 0 }}>
                   {lightbox + 1} / {images.length}
                 </span>
               </figcaption>
-
-              {/* Prev */}
               {lightbox > 0 && (
                 <button onClick={e => { e.stopPropagation(); setLightbox(lightbox - 1); }}
                   className="absolute top-1/2 -translate-y-1/2 focus:outline-none"
@@ -742,7 +510,6 @@ function Gallery({ images }: { images: GalleryImage[] }) {
                   <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M11 3L6 8l5 5"/></svg>
                 </button>
               )}
-              {/* Next */}
               {lightbox < images.length - 1 && (
                 <button onClick={e => { e.stopPropagation(); setLightbox(lightbox + 1); }}
                   className="absolute top-1/2 -translate-y-1/2 focus:outline-none"
@@ -754,7 +521,6 @@ function Gallery({ images }: { images: GalleryImage[] }) {
                   <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M5 3l5 5-5 5"/></svg>
                 </button>
               )}
-              {/* Close */}
               <button onClick={() => setLightbox(null)}
                 className="absolute focus:outline-none"
                 style={{ top: -44, right: 0, background: 'none', border: 'none', cursor: 'pointer',
@@ -773,13 +539,19 @@ function Gallery({ images }: { images: GalleryImage[] }) {
 }
 
 // ─── Specs & credits ──────────────────────────────────────────────────────────
-function Specs({ project }: { project: ProjectDetail }) {
+function Specs({ project }: { project: Project }) {
   const { ref, vis } = useReveal(0.08);
-  const allSpecs = [
-    { label: 'Client',   value: project.client   },
-    { label: 'Duration', value: project.duration  },
-    { label: 'Program',  value: project.program   },
-    ...project.specs,
+  const year = new Date(project.completedAt).getFullYear();
+
+  const specs = [
+    { label: 'Type',     value: project.type                          },
+    { label: 'Location', value: project.location ?? '—'              },
+    { label: 'Area',     value: project.area ? `${project.area} m²` : '—' },
+    { label: 'Year',     value: String(year)                         },
+    ...(project.materials ?? []).map((mat, i) => ({
+      label: `Material ${i + 1}`,
+      value: mat,
+    })),
   ];
 
   return (
@@ -813,7 +585,7 @@ function Specs({ project }: { project: ProjectDetail }) {
             Technical
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-px" style={{ background: 'rgba(26,26,26,0.06)' }}>
-            {allSpecs.map(({ label, value }) => (
+            {specs.map(({ label, value }) => (
               <div key={label} className="py-5 px-5" style={{ background: 'var(--color-bg)' }}>
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.54rem',
                   letterSpacing: '0.2em', textTransform: 'uppercase',
@@ -829,55 +601,46 @@ function Specs({ project }: { project: ProjectDetail }) {
           </div>
         </motion.div>
 
-        {/* Team + Awards sidebar */}
+        {/* Services sidebar */}
         <motion.div
           className="lg:col-span-4 flex flex-col gap-8"
           initial={{ opacity: 0, y: 18 }}
           animate={vis ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.65, delay: 0.14 }}
         >
-          {/* Team */}
-          <div>
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.57rem',
-              letterSpacing: '0.22em', textTransform: 'uppercase',
-              color: 'rgba(26,26,26,0.3)', fontWeight: 500, margin: '0 0 1rem' }}>
-              Project Team
-            </p>
-            <div className="flex flex-col gap-2.5">
-              {project.team.map(member => (
-                <div key={member} className="flex items-center gap-2.5">
-                  <div style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--color-gold)', flexShrink: 0 }}/>
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem',
-                    color: 'rgba(26,26,26,0.62)', fontWeight: 300 }}>
-                    {member}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Awards */}
-          {project.awards.length > 0 && (
+          {project.services.length > 0 && (
             <div>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.57rem',
                 letterSpacing: '0.22em', textTransform: 'uppercase',
                 color: 'rgba(26,26,26,0.3)', fontWeight: 500, margin: '0 0 1rem' }}>
-                Recognition
+                Services
               </p>
-              <div className="flex flex-col gap-3">
-                {project.awards.map(award => (
-                  <div key={award} className="flex items-start gap-2.5">
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"
-                      stroke="var(--color-gold)" strokeWidth="1.3" style={{ marginTop: 2, flexShrink: 0 }}>
-                      <polygon points="5,0.5 6.5,3.6 10,4.1 7.5,6.6 8.1,10 5,8.2 1.9,10 2.5,6.6 0,4.1 3.5,3.6"/>
-                    </svg>
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.76rem',
-                      color: 'rgba(26,26,26,0.58)', fontWeight: 300, lineHeight: 1.45 }}>
-                      {award}
+              <div className="flex flex-col gap-2.5">
+                {project.services.map(service => (
+                  <div key={service} className="flex items-center gap-2.5">
+                    <div style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--color-gold)', flexShrink: 0 }}/>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem',
+                      color: 'rgba(26,26,26,0.62)', fontWeight: 300 }}>
+                      {service}
                     </span>
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* SEO description re-used as project statement */}
+          {project.seo?.description && (
+            <div>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.57rem',
+                letterSpacing: '0.22em', textTransform: 'uppercase',
+                color: 'rgba(26,26,26,0.3)', fontWeight: 500, margin: '0 0 1rem' }}>
+                Statement
+              </p>
+              <p style={{ fontFamily: 'var(--font-body)', fontWeight: 300, fontSize: '0.82rem',
+                color: 'rgba(26,26,26,0.55)', lineHeight: 1.7, margin: 0 }}>
+                {project.seo.description}
+              </p>
             </div>
           )}
         </motion.div>
@@ -886,15 +649,21 @@ function Specs({ project }: { project: ProjectDetail }) {
   );
 }
 
-// ─── Prev / Next project nav ──────────────────────────────────────────────────
-function ProjectNav({ prevSlug, nextSlug }: { prevSlug: string; nextSlug: string }) {
+// ─── Prev / Next nav ──────────────────────────────────────────────────────────
+function ProjectNav({ currentSlug }: { currentSlug: string }) {
   const { ref, vis } = useReveal(0.15);
-  const prevP = PROJECTS.find(p => p.slug === prevSlug);
-  const nextP = PROJECTS.find(p => p.slug === nextSlug);
 
-  const NavCard = ({ project, dir }: { project: ProjectDetail | undefined; dir: 'prev' | 'next' }) => {
+  // Fetch a broader list to find prev/next
+  const { data } = useGetProjectsQuery({ limit: 100, published: true });
+  const all = data?.data.projects ?? [];
+  const idx = all.findIndex(p => p.slug === currentSlug);
+  const prevP = idx > 0             ? all[idx - 1] : null;
+  const nextP = idx < all.length - 1 ? all[idx + 1] : null;
+
+  const NavCard = ({ project, dir }: { project: Project | null; dir: 'prev' | 'next' }) => {
     const [hov, setHov] = useState(false);
     if (!project) return <div className="flex-1" />;
+    const year = new Date(project.completedAt).getFullYear();
     return (
       <Link to={`/portfolio/${project.slug}`}
         className="flex-1 no-underline block relative overflow-hidden"
@@ -902,12 +671,11 @@ function ProjectNav({ prevSlug, nextSlug }: { prevSlug: string; nextSlug: string
         onMouseEnter={() => setHov(true)}
         onMouseLeave={() => setHov(false)}
       >
-        <img src={project.cover} alt={project.title} loading="lazy"
+        <img src={project.coverImage.url} alt={project.title} loading="lazy"
           className="w-full h-full object-cover absolute inset-0"
           style={{ transition: 'transform 0.9s cubic-bezier(0.25,0.46,0.45,0.94)',
             transform: hov ? 'scale(1.06)' : 'scale(1)' }}
         />
-        {/* Gradient — stronger toward nav label side */}
         <div className="absolute inset-0" style={{
           background: `linear-gradient(to ${dir === 'prev' ? 'right' : 'left'}, rgba(13,26,38,0.92) 0%, rgba(13,26,38,0.45) 55%, rgba(13,26,38,0.15) 100%)`,
           transition: 'opacity 0.4s', opacity: hov ? 1 : 0.88,
@@ -930,7 +698,7 @@ function ProjectNav({ prevSlug, nextSlug }: { prevSlug: string; nextSlug: string
           </span>
           <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.68rem',
             color: 'rgba(255,255,255,0.42)', fontWeight: 300 }}>
-            {project.location} · {project.year}
+            {project.location} · {year}
           </span>
         </div>
       </Link>
@@ -956,7 +724,7 @@ function ProjectNav({ prevSlug, nextSlug }: { prevSlug: string; nextSlug: string
         <NavCard project={nextP} dir="next" />
       </motion.div>
       <div className="container-main py-5 flex justify-center">
-        <Link to="/portfolio" className="inline-flex items-center gap-2 no-underline group"
+        <Link to="/portfolio" className="inline-flex items-center gap-2 no-underline"
           style={{ fontFamily: 'var(--font-body)', fontSize: '0.62rem',
             letterSpacing: '0.2em', textTransform: 'uppercase',
             color: 'rgba(255,255,255,0.28)',
@@ -973,7 +741,7 @@ function ProjectNav({ prevSlug, nextSlug }: { prevSlug: string; nextSlug: string
   );
 }
 
-// ─── Not found ────────────────────────────────────────────────────────────────
+// ─── Not found / Error ────────────────────────────────────────────────────────
 function NotFound() {
   return (
     <div className="flex flex-col items-center justify-center gap-7 py-40"
@@ -1007,63 +775,77 @@ function NotFound() {
 export default function ProjectDetailPage() {
   const { slug }  = useParams<{ slug: string }>();
   const navigate  = useNavigate();
-  const project   = PROJECTS.find(p => p.slug === slug);
 
-  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, [slug]);
+  const { data, isLoading, isError } = useGetProjectBySlugQuery(slug ?? '', {
+    skip: !slug,
+  });
 
-  // Keyboard: ← → arrows for project nav, Esc to go back
+  const project = data?.data;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+  }, [slug]);
+
+  // Keyboard navigation
   useEffect(() => {
     if (!project) return;
     const fn = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') navigate(`/portfolio/${project.nextSlug}`);
-      if (e.key === 'ArrowLeft')  navigate(`/portfolio/${project.prevSlug}`);
-      if (e.key === 'Escape')     navigate('/portfolio');
+      if (e.key === 'Escape') navigate('/portfolio');
     };
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
   }, [project, navigate]);
 
-  if (!project) return <NotFound />;
+  if (isLoading) return <HeroSkeleton />;
+  if (isError || !project) return <NotFound />;
 
-  // Pick 3rd gallery image for the mid-article image break
-  const breakImg = project.gallery[2] ?? project.gallery[0];
+  // Use 3rd image for the mid-article break
+  const breakImage = project.images?.[2] ?? project.images?.[0];
 
   return (
     <>
       <ReadingProgress />
       <Hero project={project} />
-      <TagsStrip tags={project.tags} awards={project.awards} />
+      <TagsStrip project={project} />
 
       {/* Body */}
       <div style={{ background: 'var(--color-bg)' }}>
         <div className="container-main">
-          {/* Two-col layout: side nav + content */}
           <div className="grid grid-cols-1 xl:grid-cols-[188px_1fr] gap-0 xl:gap-16">
             <SideNav />
 
             <main className="min-w-0 pb-6">
               <NarrativeSection
-                id="overview" eyebrow="Overview" heading="The Project"
-                body={project.overview} hasPullQuote pullQuote={project.pullQuote}
-              />
-              <NarrativeSection
-                id="challenge" eyebrow="The Brief" heading="Challenge"
-                body={project.challenge}
+                id="overview"
+                eyebrow="Overview"
+                heading="The Project"
+                body={project.description}
+                pullQuote={project.seo?.description}
               />
 
-              {/* Full-bleed visual break between challenge & approach */}
-              {breakImg && <ImageBreak src={breakImg.src} caption={breakImg.caption} />}
+              <NarrativeSection
+                id="challenge"
+                eyebrow="The Brief"
+                heading="Challenge"
+                body={project.clientBrief}
+              />
+
+              {/* Full-bleed visual break */}
+              {breakImage && (
+                <ImageBreak src={breakImage.url} />
+              )}
 
               <NarrativeSection
-                id="approach" eyebrow="Design" heading="Our Approach"
+                id="approach"
+                eyebrow="Design"
+                heading="Our Approach"
                 body={project.approach}
               />
-              <NarrativeSection
-                id="outcome" eyebrow="Result" heading="Outcome"
-                body={project.outcome}
-              />
 
-              {project.gallery.length > 0 && <Gallery images={project.gallery} />}
+              {project.images && project.images.length > 0 && (
+                <Gallery images={project.images} />
+              )}
+
               <Specs project={project} />
             </main>
           </div>
@@ -1122,7 +904,7 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      <ProjectNav prevSlug={project.prevSlug} nextSlug={project.nextSlug} />
+      <ProjectNav currentSlug={slug ?? ''} />
     </>
   );
 }

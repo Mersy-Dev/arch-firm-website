@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
-import { NextFunction } from 'express';
 import slugifyLib from 'slugify';
 import { CONSTANTS } from '../config/constants';
 
@@ -59,12 +58,11 @@ const projectSchema = new Schema<IProject>(
   { timestamps: true }
 );
 
-// Auto-generate slug from title before saving
-projectSchema.pre<IProject>('save', function (next) {
+// Update the hook signature:
+projectSchema.pre('save', async function () {
   if (this.isModified('title') || this.isNew) {
     this.slug = slugifyLib(this.title, { lower: true, strict: true });
   }
-  next();
 });
 
 // Text search index for search functionality

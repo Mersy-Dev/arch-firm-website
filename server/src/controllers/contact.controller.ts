@@ -5,23 +5,38 @@ import { ApiError } from '../utils/ApiError';
 import { asyncHandler } from '../utils/asyncHandler';
 import { getPaginationParams, buildPaginatedResult } from '../utils/pagination';
 
-// POST /api/v1/contact — Public
+// ─── Types matching your Contact model / EmailService signature ────────────
+
+interface ContactBody {
+  name:         string;
+  email:        string;
+  message:      string;
+  phone?:       string;
+  projectType?: 'residential' | 'commercial' | 'other';
+  budget?:      string;
+}
+
+// ─── POST /api/v1/contact — Public ─────────────────────────────────────────
+
 export const submitContact = asyncHandler(async (req, res) => {
+  const body = req.body as ContactBody;
+
   const contact = await Contact.create({
-    ...req.body,
+    ...body,
     ipAddress: req.ip,
   });
 
   // Fire emails — don't fail the request if email fails
   Promise.allSettled([
-    EmailService.sendAdminNotification(req.body),
-    EmailService.sendAutoReply(req.body.name, req.body.email),
+    EmailService.sendAdminNotification(body),
+    EmailService.sendAutoReply(body.name, body.email),
   ]);
 
   res.status(201).json(new ApiResponse(201, contact, 'Enquiry submitted successfully'));
 });
 
-// GET /api/v1/contact — Admin only
+// ─── GET /api/v1/contact — Admin only ──────────────────────────────────────
+
 export const getEnquiries = asyncHandler(async (req, res) => {
   const { page, limit, skip } = getPaginationParams(req.query.page, req.query.limit);
   const filter = req.query.unread === 'true' ? { isRead: false } : {};
@@ -36,7 +51,8 @@ export const getEnquiries = asyncHandler(async (req, res) => {
   );
 });
 
-// PATCH /api/v1/contact/:id/read — Admin only
+// ─── PATCH /api/v1/contact/:id/read — Admin only ───────────────────────────
+
 export const markAsRead = asyncHandler(async (req, res) => {
   const contact = await Contact.findByIdAndUpdate(
     req.params.id,
