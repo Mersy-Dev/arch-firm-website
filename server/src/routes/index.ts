@@ -4,7 +4,7 @@ import contactRoutes   from './contact.routes';
 import serviceRoutes   from './service.routes';
 import dashboardRoutes from './dashboard.routes';
 import projectRoutes   from './project.routes';
-// import blogRoutes        from './blog.routes';
+import blogRoutes        from './blog.routes';
 // import teamRoutes        from './team.routes';
 // import testimonialRoutes from './testimonial.routes';
 // import careerRoutes      from './career.routes';
@@ -25,7 +25,7 @@ router.use('/projects',  projectRoutes);
 router.use('/dashboard', dashboardRoutes);
 
 // ── Uncomment as you build each section ────────────────────────────────────
-// router.use('/blog',         blogRoutes);
+router.use('/blog',         blogRoutes);
 // router.use('/team',         teamRoutes);
 // router.use('/testimonials', testimonialRoutes);
 // router.use('/careers',      careerRoutes);
