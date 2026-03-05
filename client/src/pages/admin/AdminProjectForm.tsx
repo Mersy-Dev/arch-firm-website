@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import {
   Upload, X, Plus, AlertCircle, ChevronLeft,
-  Image as ImageIcon, Star, Eye, Loader,
+  Image as  Star, Eye, Loader,
 } from 'lucide-react';
 import {
   useCreateProjectMutation,
@@ -16,7 +16,7 @@ import {
   useDeleteProjectImageMutation,
 } from '@/services/projectsApi';
 import { PROJECT_TYPES } from '@/types/project.types';
-import type { ProjectType } from '@/types/project.types';
+// import type { ProjectType } from '@/types/project.types';
 
 // ─── Form schema ─────────────────────────────────────────────────────────────
 const formSchema = z.object({
@@ -184,17 +184,17 @@ export default function AdminProjectForm() {
   const project = existing?.data.project;
   const isBusy  = creating || updating;
 
-  const {
-    register, handleSubmit, reset, control,
-    formState: { errors },
-  } = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      featured:  false,
-      published: false,
-      sortOrder: '0',
-    },
-  });
+ const {
+  register, handleSubmit, reset, control,
+  formState: { errors },
+} = useForm<FormValues>({
+  resolver: zodResolver(formSchema) as Resolver<FormValues>,
+  defaultValues: {
+    featured:  false,
+    published: false,
+    sortOrder: '0',
+  },
+});
 
   // Pre-fill form when editing
   useEffect(() => {

@@ -3,14 +3,14 @@ import { motion } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import {
   FileText, MessageSquare, FolderOpen,
-  ArrowUpRight, Clock, TrendingUp, Eye, Plus,
+  ArrowUpRight, TrendingUp, Eye, Plus,
   AlertCircle, RefreshCw, LayoutGrid,
 } from 'lucide-react';
 import { useGetDashboardOverviewQuery } from '@/services/dashboardApi';
 import { useGetProjectsQuery } from '@/services/projectsApi';
 import { selectCurrentUser } from '@/features/auth/authSlice';
 import { useAppSelector } from '@/app/hooks';
-import type { RecentEnquiry, RecentProject } from '@/services/dashboardApi';
+import type { RecentEnquiry } from '@/services/dashboardApi';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function greeting(): string {
@@ -332,7 +332,7 @@ export default function AdminDashboard() {
   // Also pull project counts from projectsApi for the stat card
   const { data: projData, isLoading: projLoading } = useGetProjectsQuery({ limit: 1, page: 1 });
   const totalProjects     = projData?.data.pagination?.total ?? 0;
-  const publishedProjects = projData?.data.pagination?.total ?? 0; // adjust if backend returns published count
+  // const publishedProjects = projData?.data.pagination?.total ?? 0; // adjust if backend returns published count
 
   const stats     = data?.data?.stats;
   const enquiries = data?.data?.recentEnquiries ?? [];

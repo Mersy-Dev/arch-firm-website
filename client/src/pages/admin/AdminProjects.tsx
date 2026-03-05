@@ -5,7 +5,7 @@ import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
 import {
   Plus, Search, Filter, Edit2, Trash2, Eye, EyeOff,
-  Star, StarOff, AlertCircle, ChevronLeft, ChevronRight,
+  Star, AlertCircle, ChevronLeft, ChevronRight,
   MoreVertical, ImageOff,
 } from 'lucide-react';
 import {

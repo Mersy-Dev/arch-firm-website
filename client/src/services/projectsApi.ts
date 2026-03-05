@@ -6,6 +6,10 @@ import type {
   ProjectListParams,
 } from "@/types/project.types";
 
+type ProjectBySlugRaw =
+  | { success: true; data: { project: Project } }   // nested shape
+  | { success: true; data: Project };   
+
 export const projectsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     // GET /projects
@@ -33,8 +37,18 @@ export const projectsApi = baseApi.injectEndpoints({
     }),
 
     // GET /projects/slug/:slug
+    // If backend returns { success, data: Project } instead of { success, data: { project: Project } }
     getProjectBySlug: build.query<ProjectResponse, string>({
       query: (slug) => `/projects/slug/${slug}`,
+      transformResponse: (response: ProjectBySlugRaw): ProjectResponse => ({
+        success: true,
+        data: {
+          project:
+            "project" in response.data
+              ? response.data.project // nested: { data: { project: Project } }
+              : response.data, // flat:   { data: Project }
+        },
+      }),
       providesTags: (_r, _e, slug) => [{ type: "Project", id: slug }],
     }),
 
