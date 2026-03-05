@@ -568,7 +568,7 @@ function Values() {
 //   Column B: offset start with small portrait + large portrait
 //   Column C (desktop only): decorative text label
 // ═══════════════════════════════════════════════════════════════════════════════
-function TeamMember({ member, index, isActive, onEnter, onLeave }: {
+function TeamMember({ member, isActive, onEnter, onLeave }: {
   member: typeof TEAM[0];
   index: number;
   isActive: boolean;
@@ -736,7 +736,7 @@ function Team() {
               }} />
             </div>
             <div className="flex flex-col gap-px" style={{ background: 'rgba(26,26,26,0.07)', flex: 1 }}>
-              {[2, 3].map((idx, j) => (
+              {[2, 3].map((idx, ) => (
                 <motion.div
                   key={TEAM[idx].name}
                   initial={{ opacity: 0, y: 28 }}

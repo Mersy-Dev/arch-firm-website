@@ -3,33 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import {
   Plus, Pencil, Trash2, Eye, EyeOff,
-  Layers, AlertTriangle, X, Search,
-  GripVertical, CheckCircle, ArrowUpRight,
+  Layers, AlertTriangle, X, Search, CheckCircle, ArrowUpRight,
   RefreshCw,
 } from 'lucide-react';
 import {
   useGetAdminServicesQuery,
   useDeleteServiceMutation,
   useToggleServiceStatusMutation,
+  type Service,  // 👈 import the type
+
 } from '@/services/servicesApi';
 import ServiceFormModal from '@/components/admin/ServiceFormModal';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
-interface Service {
-  _id: string;
-  number: string;
-  title: string;
-  tagline: string;
-  shortDesc: string;
-  description: string;
-  features: string[];
-  deliverables: string[];
-  image: string;
-  slug: string;
-  isActive: boolean;
-  order: number;
-  createdAt: string;
-}
+
 
 // ─── Skeleton card ───────────────────────────────────────────────────────────
 function SkeletonCard() {

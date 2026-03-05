@@ -1,10 +1,7 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
-// Model interfaces live in their own model files (e.g. Project.model.ts).
-// This file is reserved for shared/cross-cutting types.
-
-export interface IUser extends Document {
-  _id: string;
+export interface IUser extends Document<Types.ObjectId> {
+  _id: Types.ObjectId;
   email: string;
   password: string;
   role: 'admin' | 'superadmin';

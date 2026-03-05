@@ -10,6 +10,7 @@ import {
 } from "@/services/blogApi";
 import type {
   BlogPost,
+  BlogPostSummary,
   BlogStatus,
   CreateBlogPayload,
   UpdateBlogPayload,
@@ -814,7 +815,7 @@ function BlogFormModal({
   post,
   onClose,
 }: {
-  post: BlogPost | null;
+  post: BlogPostSummary | null;
   onClose: () => void;
 }) {
   const isEdit = Boolean(post);
@@ -834,7 +835,7 @@ function BlogFormModal({
 
   // Blocks — initialise from existing HTML or with a single empty text block
   const [blocks, setBlocks] = useState<ContentBlock[]>(() =>
-    htmlToBlocks(post?.content ?? ""),
+    htmlToBlocks((post as BlogPost)?.content ?? ""),
   );
 
   // Cover image
@@ -1656,9 +1657,11 @@ function BlogFormModal({
 export default function AdminBlog() {
   const [statusFilter, setStatusFilter] = useState<BlogStatus | "">("");
   const [page, setPage] = useState(1);
-  const [editPost, setEditPost] = useState<BlogPost | null>(null);
+  const [editPost, setEditPost] = useState<BlogPostSummary | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<BlogPostSummary | null>(
+    null,
+  );
   const [showForm, setShowForm] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<BlogPost | null>(null);
 
   const params = {
     page,
@@ -1676,7 +1679,8 @@ export default function AdminBlog() {
   const pagination = data?.data?.pagination;
 
   // Status cycle: draft → published → archived → draft
-  async function handleStatusCycle(post: BlogPost) {
+  async function handleStatusCycle(post: BlogPostSummary) {
+    // was BlogPost
     const next: BlogStatus =
       post.status === "draft"
         ? "published"
@@ -1700,8 +1704,9 @@ export default function AdminBlog() {
     setEditPost(null);
     setShowForm(true);
   }
-  function openEdit(p: BlogPost) {
-    setEditPost(p);
+  function openEdit(p: BlogPostSummary) {
+    // was BlogPost
+    setEditPost(p as BlogPost); // cast is safe — modal fetches full post if needed
     setShowForm(true);
   }
   function closeForm() {

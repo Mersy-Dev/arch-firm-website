@@ -310,7 +310,6 @@ function StickySidebar({
   title,
   readTime,
   views,
-  publishedAt,
 }: {
   title: string;
   readTime: number;

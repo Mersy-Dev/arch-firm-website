@@ -1,7 +1,7 @@
-import { baseApi } from '@/app/api';
+import { baseApi } from "@/app/api";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-export type BlogStatus = 'draft' | 'published' | 'archived';
+export type BlogStatus = "draft" | "published" | "archived";
 
 export interface BlogAuthor {
   _id: string;
@@ -31,7 +31,7 @@ export interface BlogPost {
 }
 
 // List view — content field is excluded by the server
-export type BlogPostSummary = Omit<BlogPost, 'content'>;
+export type BlogPostSummary = Omit<BlogPost, "content">;
 
 export interface Pagination {
   total: number;
@@ -86,11 +86,13 @@ export interface CreateBlogPayload {
 export type UpdateBlogPayload = Partial<CreateBlogPayload>;
 
 // ─── Helper: build FormData for multipart uploads ────────────────────────────
-function toBlogFormData(payload: CreateBlogPayload | UpdateBlogPayload): FormData {
+function toBlogFormData(
+  payload: CreateBlogPayload | UpdateBlogPayload,
+): FormData {
   const fd = new FormData();
   Object.entries(payload).forEach(([key, val]) => {
     if (val === undefined || val === null) return;
-    if (key === 'tags' && Array.isArray(val)) {
+    if (key === "tags" && Array.isArray(val)) {
       fd.append(key, JSON.stringify(val));
     } else if (val instanceof File) {
       fd.append(key, val);
@@ -103,108 +105,113 @@ function toBlogFormData(payload: CreateBlogPayload | UpdateBlogPayload): FormDat
 
 // ─── Inject endpoints ────────────────────────────────────────────────────────
 const blogApi = baseApi.injectEndpoints({
-  endpoints: builder => ({
-
+  endpoints: (builder) => ({
     // ── Public: paginated published posts ─────────────────────────────────
     getAllPosts: builder.query<
       ApiResponse<PaginatedResponse<BlogPostSummary>>,
-      GetPostsParams | void
+      GetPostsParams | undefined
     >({
       query: (params = {}) => ({
-        url: '/blog',
-        params,
+        url: "/blog",
+        params: params as Record<string, unknown>,
       }),
-      providesTags: ['Blog'],
+      providesTags: ["Blog"],
     }),
 
     // ── Public: featured posts ────────────────────────────────────────────
     getFeaturedPosts: builder.query<ApiResponse<BlogPostSummary[]>, void>({
-      query: () => '/blog/featured',
-      providesTags: ['Blog'],
+      query: () => "/blog/featured",
+      providesTags: ["Blog"],
     }),
 
     // ── Public: category list ─────────────────────────────────────────────
     getBlogCategories: builder.query<ApiResponse<string[]>, void>({
-      query: () => '/blog/categories',
-      providesTags: ['Blog'],
+      query: () => "/blog/categories",
+      providesTags: ["Blog"],
     }),
 
     // ── Public: tags list ─────────────────────────────────────────────────
     getBlogTags: builder.query<ApiResponse<string[]>, void>({
-      query: () => '/blog/tags',
-      providesTags: ['Blog'],
+      query: () => "/blog/tags",
+      providesTags: ["Blog"],
     }),
 
     // ── Public: single post by slug (full content) ────────────────────────
     getPostBySlug: builder.query<ApiResponse<BlogPost>, string>({
-      query: slug => `/blog/${slug}`,
-      providesTags: (_res, _err, slug) => [{ type: 'Blog' as const, id: slug }],
+      query: (slug) => `/blog/${slug}`,
+      providesTags: (_res, _err, slug) => [{ type: "Blog" as const, id: slug }],
     }),
 
     // ── Admin: all posts (any status) ─────────────────────────────────────
     getAdminPosts: builder.query<
       ApiResponse<PaginatedResponse<BlogPostSummary>>,
-      GetAdminPostsParams | void
+      GetAdminPostsParams | undefined
     >({
       query: (params = {}) => ({
-        url: '/blog/admin/all',
-        params,
+        url: "/blog/admin/all",
+        params: params as Record<string, unknown>,
       }),
-      providesTags: ['Blog'],
+      providesTags: ["Blog"],
     }),
 
     // ── Admin: single post by ID ──────────────────────────────────────────
     getPostById: builder.query<ApiResponse<BlogPost>, string>({
-      query: id => `/blog/admin/${id}`,
-      providesTags: (_res, _err, id) => [{ type: 'Blog' as const, id }],
+      query: (id) => `/blog/admin/${id}`,
+      providesTags: (_res, _err, id) => [{ type: "Blog" as const, id }],
     }),
 
     // ── Admin: create post (multipart) ────────────────────────────────────
     createPost: builder.mutation<ApiResponse<BlogPost>, CreateBlogPayload>({
-      query: payload => ({
-        url: '/blog',
-        method: 'POST',
+      query: (payload) => ({
+        url: "/blog",
+        method: "POST",
         body: toBlogFormData(payload),
       }),
-      invalidatesTags: ['Blog'],
+      invalidatesTags: ["Blog"],
     }),
 
     // ── Admin: update post (multipart) ────────────────────────────────────
-    updatePost: builder.mutation<ApiResponse<BlogPost>, { id: string; data: UpdateBlogPayload }>({
+    updatePost: builder.mutation<
+      ApiResponse<BlogPost>,
+      { id: string; data: UpdateBlogPayload }
+    >({
       query: ({ id, data }) => ({
         url: `/blog/${id}`,
-        method: 'PUT',
+        method: "PUT",
         body: toBlogFormData(data),
       }),
-      invalidatesTags: ['Blog'],
+      invalidatesTags: ["Blog"],
     }),
 
     // ── Admin: update status ──────────────────────────────────────────────
-    updatePostStatus: builder.mutation<ApiResponse<BlogPost>, { id: string; status: BlogStatus }>({
+    updatePostStatus: builder.mutation<
+      ApiResponse<BlogPost>,
+      { id: string; status: BlogStatus }
+    >({
       query: ({ id, status }) => ({
         url: `/blog/${id}/status`,
-        method: 'PATCH',
+        method: "PATCH",
         body: { status },
       }),
-      invalidatesTags: ['Blog'],
+      invalidatesTags: ["Blog"],
     }),
 
     // ── Admin: toggle featured ────────────────────────────────────────────
     toggleFeatured: builder.mutation<ApiResponse<BlogPost>, string>({
-      query: id => ({
+      query: (id) => ({
         url: `/blog/${id}/feature`,
-        method: 'PATCH',
+        method: "PATCH",
       }),
-      invalidatesTags: ['Blog'],
+      invalidatesTags: ["Blog"],
     }),
 
     // ── Admin: delete ─────────────────────────────────────────────────────
     deletePost: builder.mutation<ApiResponse<null>, string>({
-      query: id => ({
+      query: (id) => ({
         url: `/blog/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
-      invalidatesTags: ['Blog'],
+      invalidatesTags: ["Blog"],
     }),
   }),
 });

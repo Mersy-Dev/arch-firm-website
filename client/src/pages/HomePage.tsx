@@ -8,8 +8,8 @@ import { useGetProjectsQuery } from '@/services/projectsApi';
 
 export default function HomePage() {
   const { data: featured, isLoading } = useGetProjectsQuery({ 
-    featured: 'true', 
-    published: 'true', 
+    featured: true, 
+    published: true, 
     limit: 8
     , 
   });

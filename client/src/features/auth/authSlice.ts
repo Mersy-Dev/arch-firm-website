@@ -4,7 +4,7 @@ import type { User } from '@/types/user.types';
 
 // ─── State ─────────────────────────────────────────────────────────────────
 
-interface AuthState {
+export interface AuthState {
   user:           User | null;
   token:          string | null;   // accessToken — used by baseApi prepareHeaders
   refreshToken:   string | null;   // persisted so we can get a new accessToken on reload
@@ -20,7 +20,7 @@ const initialState: AuthState = {
 
 // ─── Slice ─────────────────────────────────────────────────────────────────
 
-const authSlice = createSlice({
+ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {

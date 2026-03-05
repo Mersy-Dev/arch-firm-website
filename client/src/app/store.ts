@@ -1,4 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, type Reducer } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query/react';
 import {
   persistStore,
@@ -9,17 +9,22 @@ import storage from 'redux-persist/lib/storage';
 import authReducer from '@/features/auth/authSlice';
 import uiReducer   from '@/features/ui/uiSlice';
 import { baseApi }  from './api';
+import type { AuthState } from '@/features/auth/authSlice';
 
-// Persist both tokens + user so sessions survive page refresh
 const authPersistConfig = {
   key: 'auth',
   storage,
   whitelist: ['token', 'refreshToken', 'user', 'isAuthenticated'],
 };
 
+const persistedAuthReducer = persistReducer(
+  authPersistConfig,
+  authReducer
+) as unknown as Reducer<AuthState & { _persist: { version: number; rehydrated: boolean } }>;
+
 export const store = configureStore({
   reducer: {
-    auth: persistReducer(authPersistConfig, authReducer),
+    auth: persistedAuthReducer,
     ui:   uiReducer,
     [baseApi.reducerPath]: baseApi.reducer,
   },
