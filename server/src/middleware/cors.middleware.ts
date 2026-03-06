@@ -1,7 +1,7 @@
 import cors from 'cors';
 
 const allowedOrigins = [
-  process.env.CLIENT_URL || 'http://localhost:5173',
+  process.env.CLIENT_URL!, 'http://localhost:5173',
   'http://localhost:3000',
 ];
 
@@ -15,6 +15,6 @@ export const corsMiddleware = cors({
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 });
