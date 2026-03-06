@@ -75,8 +75,8 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', // ✅
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   res.json(
@@ -84,7 +84,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
       200,
       {
         accessToken,
-        user: {name: user.name, email: user.email, role: user.role },
+        user: { name: user.name, email: user.email, role: user.role },
       },
       'Login successful',
     ),
@@ -128,7 +128,11 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
     await user.save();
   }
 
-  res.clearCookie('refreshToken');
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+  });
   res.json(new ApiResponse(200, null, 'Logged out successfully'));
 });
 
